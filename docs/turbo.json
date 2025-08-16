@@ -1,0 +1,14 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["build/**"]
+    },
+    "test": {
+      "outputs": []
+    },
+    "test:coverage": {
+      "outputs": []
+    }
+  }
+}

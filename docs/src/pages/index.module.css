@@ -1,0 +1,268 @@
+/**
+ * Modern Homepage Styles for NestJS Mailer Core
+ * Complementing the blue theme with contemporary design
+ */
+
+.heroBanner {
+  padding: 8rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #33A1E0 0%, #2B8DC7 100%);
+  color: white;
+}
+
+/* Add animated background elements */
+.heroBanner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: float 20s ease-in-out infinite;
+  opacity: 0.3;
+}
+
+.heroBanner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(30px, -30px) rotate(120deg);
+  }
+  66% {
+    transform: translate(-20px, 20px) rotate(240deg);
+  }
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  position: relative;
+  z-index: 10;
+}
+
+.buttons .button {
+  font-size: 1.1rem;
+  padding: 1rem 2rem;
+  min-width: 200px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.buttons .button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: all 0.5s ease;
+}
+
+.buttons .button:hover::before {
+  left: 100%;
+}
+
+.buttons .button--secondary {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.buttons .button--secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.buttons .button--outline {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+.buttons .button--outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+/* Hero content styling */
+.heroBanner h1 {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.heroBanner .hero__subtitle {
+  font-size: 1.4rem;
+  font-weight: 400;
+  opacity: 0.95;
+  margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+  position: relative;
+  z-index: 10;
+}
+
+/* Responsive design */
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 4rem 1rem;
+  }
+  
+  .heroBanner h1 {
+    font-size: 2.8rem;
+  }
+  
+  .heroBanner .hero__subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .buttons .button {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .heroBanner {
+    padding: 3rem 1rem;
+  }
+  
+  .heroBanner h1 {
+    font-size: 2.2rem;
+  }
+  
+  .heroBanner .hero__subtitle {
+    font-size: 1.1rem;
+  }
+}
+
+/* Feature section enhancements */
+.featuresContainer {
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  padding: 5rem 0;
+}
+
+.featureCard {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  height: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.featureCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.featureIcon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.featureTitle {
+  color: #1e40af;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.featureDescription {
+  color: #64748b;
+  line-height: 1.7;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .heroBanner {
+  background: linear-gradient(135deg, #2B8DC7 0%, #1F6E99 100%);
+}
+
+[data-theme='dark'] .featuresContainer {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+[data-theme='dark'] .featureCard {
+  background: #1e293b;
+  border-color: rgba(148, 163, 184, 0.1);
+}
+
+[data-theme='dark'] .featureCard:hover {
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+[data-theme='dark'] .featureIcon {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+}
+
+[data-theme='dark'] .featureTitle {
+  color: #93c5fd;
+}
+
+[data-theme='dark'] .featureDescription {
+  color: #cbd5e1;
+}

@@ -1,0 +1,61 @@
+services:
+  mailer:
+    build: .
+    container_name: nestjs-mailer
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    volumes:
+      - .:/usr/src/app
+    command: ["node", "./dist/examples/demo.js"]
+    networks:
+      - mailnet
+
+  smtp:
+    image: maildev/maildev:latest
+    container_name: smtp-mock
+    ports:
+      - "1025:1025"   # SMTP
+      - "1080:1080"   # Web UI
+    environment:
+      MAILDEV_SMTP_PORT: 1025
+      MAILDEV_WEB_PORT: 1080
+    networks:
+      - mailnet
+
+  ses:
+    image: localstack/localstack:3.4
+    container_name: ses-mock
+    ports:
+      - "4566:4566"   # LocalStack edge port for AWS APIs
+      - "4579:4579"   # SES port (legacy, edge covers all)
+    environment:
+      SERVICES: ses
+      DEBUG: 1
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    volumes:
+      - localstack_data:/var/lib/localstack
+    networks:
+      - mailnet
+
+  # mailgun:
+  #   image: ghcr.io/namshi/mailgun-mock:latest
+  #   container_name: mailgun-mock
+  #   ports:
+  #     - "8025:8025"   # Mailgun mock API
+  #   environment:
+  #     PORT: 8025
+  #   networks:
+  #     - mailnet
+
+
+volumes:
+  localstack_data:
+
+networks:
+  mailnet:
+    driver: bridge

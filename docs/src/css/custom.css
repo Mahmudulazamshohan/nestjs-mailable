@@ -1,0 +1,377 @@
+/**
+ * Modern Blue Theme for NestJS Mailer Core Documentation
+ * Built with contemporary design principles and accessibility in mind.
+ */
+
+/* Custom font imports for modern look */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Root variables for modern blue theme */
+:root {
+  /* Modern Blue Color Palette - #33A1E0 Based */
+  --ifm-color-primary: #33A1E0;
+  --ifm-color-primary-dark: #2B8DC7;
+  --ifm-color-primary-darker: #2684BB;
+  --ifm-color-primary-darkest: #1F6E99;
+  --ifm-color-primary-light: #4BAEE6;
+  --ifm-color-primary-lighter: #6BBCEB;
+  --ifm-color-primary-lightest: #A3D4F2;
+  
+  /* Modern Secondary Colors */
+  --ifm-color-secondary: #64748b;
+  --ifm-color-secondary-dark: #475569;
+  --ifm-color-secondary-darker: #334155;
+  --ifm-color-secondary-darkest: #1e293b;
+  --ifm-color-secondary-light: #94a3b8;
+  --ifm-color-secondary-lighter: #cbd5e1;
+  --ifm-color-secondary-lightest: #f1f5f9;
+
+  /* Background Colors */
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f8fafc;
+  --ifm-hero-background-color: linear-gradient(135deg, #33A1E0 0%, #2B8DC7 100%);
+  
+  /* Typography */
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ifm-font-family-monospace: 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.6;
+  
+  /* Modern spacing and sizing */
+  --ifm-spacing-horizontal: 1.5rem;
+  --ifm-spacing-vertical: 1.5rem;
+  --ifm-border-radius: 12px;
+  --ifm-button-border-radius: 8px;
+  --ifm-card-border-radius: 16px;
+  
+  /* Shadows for depth */
+  --ifm-box-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ifm-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --ifm-box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Code highlighting - Dracula theme compatible */
+  --ifm-code-font-size: 0.9rem;
+  --docusaurus-highlighted-code-line-bg: rgba(68, 71, 90, 0.5);
+  --ifm-code-background: #282a36;
+  --ifm-code-border-radius: 8px;
+  
+  /* Navbar enhancements */
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-navbar-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ifm-navbar-height: 70px;
+  
+  /* Footer styling */
+  --ifm-footer-background-color: #1e293b;
+  --ifm-footer-color: #cbd5e1;
+  --ifm-footer-link-color: #93c5fd;
+  
+  /* Modern transitions */
+  --ifm-transition-fast: 150ms ease-in-out;
+  --ifm-transition-slow: 300ms ease-in-out;
+}
+
+/* Dark theme adjustments */
+[data-theme='dark'] {
+  --ifm-color-primary: #6BBCEB;
+  --ifm-color-primary-dark: #4BAEE6;
+  --ifm-color-primary-darker: #33A1E0;
+  --ifm-color-primary-darkest: #2B8DC7;
+  --ifm-color-primary-light: #8BC9EF;
+  --ifm-color-primary-lighter: #A3D4F2;
+  --ifm-color-primary-lightest: #C7E4F7;
+  
+  --ifm-background-color: #0f172a;
+  --ifm-background-surface-color: #1e293b;
+  --ifm-hero-background-color: linear-gradient(135deg, #2B8DC7 0%, #1F6E99 100%);
+  
+  --ifm-navbar-background-color: #1e293b;
+  --ifm-navbar-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  
+  --ifm-code-background: #282a36;
+  --docusaurus-highlighted-code-line-bg: rgba(68, 71, 90, 0.7);
+  
+  --ifm-footer-background-color: #0f172a;
+}
+
+/* Global improvements */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Modern navbar styling */
+.navbar {
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  transition: all var(--ifm-transition-fast);
+}
+
+.navbar__brand:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+  transition: transform var(--ifm-transition-fast);
+}
+
+.navbar__item {
+  font-weight: 500;
+  transition: all var(--ifm-transition-fast);
+}
+
+.navbar__link:hover {
+  color: var(--ifm-color-primary);
+  transform: translateY(-1px);
+}
+
+/* Modern button styling */
+.button {
+  font-weight: 600;
+  border-radius: var(--ifm-button-border-radius);
+  transition: all var(--ifm-transition-fast);
+  box-shadow: var(--ifm-box-shadow-sm);
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ifm-box-shadow);
+}
+
+.button--primary {
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 100%);
+  border: none;
+}
+
+.button--secondary {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--ifm-color-primary);
+  border: 2px solid var(--ifm-color-primary);
+}
+
+.button--outline {
+  border-width: 2px;
+  font-weight: 600;
+}
+
+/* Hero section modern styling */
+.hero {
+  background: var(--ifm-hero-background-color);
+  color: white;
+  padding: 6rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.1;
+}
+
+.hero__title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero__subtitle {
+  font-size: 1.25rem;
+  font-weight: 400;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+/* Modern card styling */
+.card {
+  border-radius: var(--ifm-card-border-radius);
+  box-shadow: var(--ifm-box-shadow);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  transition: all var(--ifm-transition-slow);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ifm-box-shadow-lg);
+}
+
+/* Modern code block styling - Dracula theme enhanced */
+.prism-code {
+  border-radius: var(--ifm-code-border-radius);
+  box-shadow: var(--ifm-box-shadow);
+  border: 1px solid rgba(68, 71, 90, 0.3);
+}
+
+/* Dracula theme code block enhancements */
+pre[class*="language-"] {
+  background: #282a36 !important;
+  border: 1px solid rgba(68, 71, 90, 0.3);
+  box-shadow: var(--ifm-box-shadow);
+}
+
+code[class*="language-"] {
+  background: #282a36 !important;
+}
+
+/* Inline code styling to match Dracula */
+:not(pre) > code[class*="language-"] {
+  background: #44475a !important;
+  color: #f8f8f2 !important;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Light theme inline code */
+[data-theme='light'] :not(pre) > code[class*="language-"] {
+  background: #282a36 !important;
+  color: #f8f8f2 !important;
+}
+
+/* Feature sections */
+.features {
+  padding: 4rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.feature {
+  text-align: center;
+  padding: 2rem;
+  border-radius: var(--ifm-card-border-radius);
+  background: white;
+  box-shadow: var(--ifm-box-shadow);
+  transition: all var(--ifm-transition-slow);
+  height: 100%;
+}
+
+[data-theme='dark'] .feature {
+  background: var(--ifm-background-surface-color);
+}
+
+.feature:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--ifm-box-shadow-lg);
+}
+
+.feature h3 {
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Sidebar improvements */
+.menu__link {
+  border-radius: 8px;
+  transition: all var(--ifm-transition-fast);
+}
+
+.menu__link:hover {
+  background: rgba(51, 161, 224, 0.1);
+  color: var(--ifm-color-primary);
+}
+
+.menu__link--active {
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 100%);
+  color: white;
+  font-weight: 600;
+}
+
+/* Table of contents */
+.table-of-contents {
+  border-left: 3px solid var(--ifm-color-primary-lightest);
+  padding-left: 1rem;
+}
+
+.table-of-contents__link {
+  border-radius: 4px;
+  transition: all var(--ifm-transition-fast);
+}
+
+.table-of-contents__link:hover {
+  color: var(--ifm-color-primary);
+  background: rgba(51, 161, 224, 0.05);
+}
+
+/* Footer modern styling */
+.footer {
+  background: var(--ifm-footer-background-color);
+  color: var(--ifm-footer-color);
+  padding: 3rem 0 1rem;
+}
+
+.footer__title {
+  color: white;
+  font-weight: 600;
+}
+
+.footer__link-item {
+  color: var(--ifm-footer-color);
+  transition: color var(--ifm-transition-fast);
+}
+
+.footer__link-item:hover {
+  color: var(--ifm-footer-link-color);
+}
+
+/* Modern scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ifm-background-surface-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-primary-lighter);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ifm-color-primary);
+}
+
+/* Responsive improvements */
+@media screen and (max-width: 996px) {
+  .hero__title {
+    font-size: 2.5rem;
+  }
+  
+  .hero {
+    padding: 4rem 0;
+  }
+  
+  .features {
+    padding: 2rem 0;
+  }
+}
+
+/* Animation utilities */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Focus states for accessibility */
+.button:focus,
+.navbar__link:focus,
+.menu__link:focus {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
