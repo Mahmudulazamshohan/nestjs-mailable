@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.1.0...v1.1.1) (2025-08-17)
+
+
+### Bug Fixes
+
+* documentations ([6a7756d](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/6a7756d6c89de70f2ff3b1572f0cf3c4e9478fbf))
+
 # [1.1.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.0.0...v1.1.0) (2025-08-17)
 
 
