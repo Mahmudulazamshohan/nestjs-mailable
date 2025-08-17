@@ -15,16 +15,11 @@
 ## Installation
 
 ```bash
-npm install nestjs-mailable nodemailer
+npm install nestjs-mailable nodemailer handlebars ejs pug mjml
 ```
 
 ```bash
-yarn add nestjs-mailable nodemailer
-```
-
-**Hint:** For additional template engines, install optional dependencies:
-```bash
-npm install handlebars ejs pug mjml
+yarn add nestjs-mailable nodemailer handlebars ejs pug mjml
 ```
 
 ## Quick Start
