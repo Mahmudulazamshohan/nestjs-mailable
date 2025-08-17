@@ -1,3 +1,12 @@
+# 1.0.0 (2025-08-17)
+
+
+### Features
+
+* release ([00d39c5](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/00d39c55fd8b5fd8393dfff22dbb9b9b6fb5484d))
+* release 1.0.0 ([7f134df](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/7f134dfee093a2da2ccea87ed97d617951ad42bf))
+* update github action & others ([5f7fdb0](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/5f7fdb0f17640b7d7d7987822ea8a3a3ba73b589))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
