@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'NestJS Mailer Core',
+  title: 'NestJS Mailable',
   tagline: 'A comprehensive NestJS mail package with modern design patterns for seamless email handling',
   favicon: 'img/favicon.ico',
 
@@ -22,8 +22,8 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'nestjs-mailer', // Usually your GitHub org/user name.
-  projectName: 'core', // Usually your repo name.
+  organizationName: 'Mahmudulazamshohan', // Usually your GitHub org/user name.
+  projectName: 'nestjs-mailable', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -44,7 +44,7 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/nestjs-mailer/core/tree/main/docs/',
+          editUrl: 'https://github.com/Mahmudulazamshohan/nestjs-mailable/tree/main/docs/',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -57,9 +57,9 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'NestJS Mailer Core',
+      title: 'NestJS Mailable',
       logo: {
-        alt: 'NestJS Mailer Logo',
+        alt: 'NestJS Mailable Logo',
         src: 'img/logo.svg',
       },
       items: [
@@ -70,7 +70,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: 'https://github.com/nestjs-mailer/core',
+          href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable',
           label: 'GitHub',
           position: 'right',
         },
@@ -93,11 +93,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub Issues',
-              href: 'https://github.com/nestjs-mailer/core/issues',
+              href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable/issues',
             },
             {
               label: 'GitHub Discussions',
-              href: 'https://github.com/nestjs-mailer/core/discussions',
+              href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable/discussions',
             },
           ],
         },
@@ -106,12 +106,12 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/nestjs-mailer/core',
+              href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} NestJS Mailer Team. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} NestJS Mailable Team. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.dracula,

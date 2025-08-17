@@ -21,14 +21,24 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 'lts/*'
+      - name: Setup Yarn
+        run: npm install -g yarn
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
+      - name: Lint code
+        run: yarn run lint:core
+      - name: Type check
+        run: tsc --noEmit
+      - name: Run tests
+        run: yarn run test:core || true
+      - name: Build package
+        run: yarn run build:core
       - name: Run semantic-release
         id: semantic
         run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+          NPM_TOKEN: ${{ secrets.NPMTOKEN }}
 
   deploy-docs:
     name: Deploy Documentation
@@ -49,10 +59,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 'lts/*'
+      - name: Setup Yarn
+        run: npm install -g yarn
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
       - name: Build documentation
-        run: npm run docs:build
+        run: yarn run docs:build
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact

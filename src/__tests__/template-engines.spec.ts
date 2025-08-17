@@ -34,12 +34,12 @@ jest.mock('mjml', () =>
 );
 
 describe('Template Engines - Simple Tests', () => {
-  const fs = jest.requireActual('fs');
-  const Handlebars = jest.requireActual('handlebars');
+  const fs = jest.requireMock('fs');
+  const Handlebars = jest.requireMock('handlebars');
 
   beforeEach(() => {
     jest.clearAllMocks();
-    fs.promises.readFile.mockResolvedValue('<h1>{{title}}</h1><p>{{content}}</p>');
+    (fs.promises.readFile as jest.Mock).mockResolvedValue('<h1>{{title}}</h1><p>{{content}}</p>');
   });
 
   describe('HandlebarsTemplateEngine', () => {

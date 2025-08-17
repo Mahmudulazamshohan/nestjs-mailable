@@ -7,7 +7,7 @@ import { TransportType } from '../types/transport.type';
 
 // Mock nodemailer
 jest.mock('nodemailer');
-const nodemailer = jest.requireActual('nodemailer');
+const nodemailer = jest.requireMock('nodemailer');
 
 // Mock AWS SDK
 jest.mock('aws-sdk', () => ({

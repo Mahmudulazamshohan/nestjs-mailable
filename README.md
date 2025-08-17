@@ -1,6 +1,6 @@
 <div align="center">
   <h1>nestjs-mailable</h1>
-  <p>A comprehensive NestJS mail package inspired by Laravel mail functionality with design patterns</p>
+  <p>A comprehensive NestJS mail package inspired by mail functionality with design patterns</p>
 </div>
 
 <div align="center">
@@ -477,7 +477,7 @@ export class AppModule {}
 
 ## Features
 
-✨ **Laravel-inspired API** - Familiar and intuitive interface  
+✨ **API** - Familiar and intuitive interface  
 🏗️ **Design Patterns** - Factory, Builder, Strategy patterns  
 📧 **Multiple Transports** - SMTP, SES, Mailgun support  
 🎨 **Template Engines** - Handlebars, EJS, Pug, MJML  

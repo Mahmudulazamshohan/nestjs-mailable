@@ -1,6 +1,6 @@
-# NestJS Mailer Core Documentation
+# NestJS Mailable Core Documentation
 
-This directory contains the comprehensive documentation for NestJS Mailer Core, built with [Docusaurus](https://docusaurus.io/).
+This directory contains the comprehensive documentation for NestJS Mailable Core, built with [Docusaurus](https://docusaurus.io/).
 
 ## 📚 Documentation Structure
 

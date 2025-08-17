@@ -5,37 +5,33 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "private": false,
-  "packageManager": "pnpm@8.0.0",
+  "packageManager": "yarn@1.22.0",
   "files": [
     "dist/**/*",
     "src/**/*",
     "templates/**/*"
   ],
-  "workspaces": [
-    ".",
-    "docs"
-  ],
   "scripts": {
-    "build": "npm run build:core",
-    "dev": "turbo dev",
-    "test": "npm run test:core",
+    "build": "yarn run build:core",
+    "dev": "yarn run dev:core",
+    "test": "yarn run test:core",
     "test:watch": "jest --watch",
-    "test:coverage": "npm run test:core -- --coverage",
-    "lint": "npm run lint:core",
-    "lint:fix": "npm run lint:fix:core",
-    "format": "npm run format:core",
+    "test:coverage": "jest --coverage",
+    "lint": "yarn run lint:core",
+    "lint:fix": "yarn run lint:fix:core",
+    "format": "yarn run format:core",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist .turbo node_modules/.cache",
-    "docs:start": "turbo start --filter=nestjs-mailable-docs",
-    "docs:build": "turbo build --filter=nestjs-mailable-docs",
-    "docs:serve": "turbo serve --filter=nestjs-mailable-docs",
+    "clean": "rimraf dist node_modules/.cache",
+    "docs:start": "cd docs && yarn start",
+    "docs:build": "cd docs && yarn build",
+    "docs:serve": "cd docs && yarn serve",
     "build:core": "rimraf dist && tsc",
     "dev:core": "tsc --watch",
     "test:core": "jest",
-    "lint:core": "eslint src/**/*.ts",
+    "lint:core": "eslint src/**/*.ts --max-warnings=99",
     "lint:fix:core": "eslint src/**/*.ts --fix",
     "format:core": "prettier --write \"src/**/*.ts\"",
-    "prepublishOnly": "npm run build:core",
+    "prepublishOnly": "yarn run build:core",
     "prepare": "husky install",
     "release": "semantic-release"
   },
@@ -52,12 +48,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/mailable.git"
+    "url": "https://github.com/Mahmudulazamshohan/nestjs-mailable.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/nestjs-mailable/issues"
+    "url": "https://github.com/Mahmudulazamshohan/nestjs-mailable/issues"
   },
-  "homepage": "https://github.com/your-username/nestjs-mailable#readme",
+  "homepage": "https://github.com/Mahmudulazamshohan/nestjs-mailable#readme",
   "peerDependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
@@ -99,7 +95,6 @@
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
     "ts-jest": "^29.1.1",
-    "turbo": "^2.3.3",
     "typescript": "^5.3.0"
   },
   "jest": {

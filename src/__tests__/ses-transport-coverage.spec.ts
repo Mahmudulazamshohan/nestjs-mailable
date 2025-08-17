@@ -210,8 +210,8 @@ describe('SesTransport Coverage', () => {
   describe('Error Handling', () => {
     it('should handle nodemailer send errors', async () => {
       // Mock nodemailer to throw error
-      const nodemailer = jest.requireActual('nodemailer');
-      nodemailer.createTransport.mockReturnValue({
+      const nodemailer = jest.requireMock('nodemailer');
+      (nodemailer.createTransport as jest.Mock).mockReturnValue({
         sendMail: jest.fn().mockRejectedValue(new Error('SMTP connection failed')),
       });
 
