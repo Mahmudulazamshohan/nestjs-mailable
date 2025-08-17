@@ -6,9 +6,10 @@
 <div align="center">
 
 [![NPM version](https://img.shields.io/npm/v/nestjs-mailable.svg)](https://www.npmjs.com/package/nestjs-mailable)
-[![License](https://img.shields.io/npm/l/nestjs-mailable.svg)](https://github.com/nestjs-mailer/core/blob/main/LICENSE)
+[![License](https://img.shields.io/npm/l/nestjs-mailable.svg)](https://github.com/Mahmudulazamshohan/nestjs-mailable/blob/main/LICENSE)
 [![Downloads](https://img.shields.io/npm/dm/nestjs-mailable.svg)](https://www.npmjs.com/package/nestjs-mailable)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/nestjs-mailer/core/ci.yml?branch=main)](https://github.com/nestjs-mailer/core/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Mahmudulazamshohan/nestjs-mailable/release.yml?branch=main)](https://github.com/Mahmudulazamshohan/nestjs-mailable/actions)
+[![Documentation](https://img.shields.io/badge/docs-available-brightgreen.svg)](https://nestjs-mailable.github.io)
 
 </div>
 
@@ -491,8 +492,8 @@ export class AppModule {}
 
 For detailed documentation, examples, and advanced usage:
 
-- **📖 [Documentation Site](https://nestjs-mailable.github.io/core/)** - Comprehensive guides and API reference
-- **🚀 [Quick Start Guide](https://nestjs-mailable.github.io/core/docs/intro)** - Get started in minutes
+- **📖 [Documentation Site](https://nestjs-mailable.github.io/)** - Comprehensive guides and API reference
+- **🚀 [Quick Start Guide](https://nestjs-mailable.github.io/docs/intro)** - Get started in minutes
 
 ### Development
 
@@ -516,8 +517,8 @@ npm run test
 
 Thanks to all the people who have contributed to this project:
 
-<a href="https://github.com/nestjs-mailable/core/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nestjs-mailable/core" />
+<a href="https://github.com/Mahmudulazamshohan/nestjs-mailable/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Mahmudulazamshohan/nestjs-mailable" />
 </a>
 
 ## License
