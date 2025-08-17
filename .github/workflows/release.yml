@@ -6,12 +6,16 @@ on:
       - main
 
 jobs:
-  release:
+  release-and-deploy:
     name: Release
     runs-on: ubuntu-latest
-    outputs:
-      released: ${{ steps.semantic.outputs.new_release_published }}
-      version: ${{ steps.semantic.outputs.new_release_version }}
+    permissions:
+      contents: write
+      # pages: write
+      # id-token: write
+    # environment:
+    #   name: github-pages
+    #   url: https://nestjs-mailable.github.io
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,40 +45,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
           NPM_TOKEN: ${{ secrets.NPMTOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPMTOKEN }}
-
-  deploy-docs:
-    name: Deploy Documentation
-    runs-on: ubuntu-latest
-    needs: release
-    if: needs.release.outputs.released == 'true'
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: https://nestjs-mailable.github.io
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-      - name: Setup Yarn
-        run: npm install -g yarn
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-      - name: Build documentation
-        run: yarn run docs:build
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./docs/build
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # - name: Build documentation
+      #   run: yarn run docs:build
+      # - name: Setup Pages
+      #   uses: actions/configure-pages@v4
+      #   with:
+      #     enablement: true
+      # - name: Upload artifact
+      #   uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: ./docs/build
+      # - name: Deploy to GitHub Pages
+      #   id: deployment
+      #   uses: actions/deploy-pages@v4
