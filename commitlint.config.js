@@ -1,4 +1,4 @@
-module.exports = { 
+module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
     // Allow longer lines for semantic-release commits
@@ -6,8 +6,5 @@ module.exports = {
     // Ignore commits that start with chore(release):
     'subject-case': [0, 'always'],
   },
-  ignores: [
-    (message) => message.includes('chore(release):'),
-    (message) => message.includes('[skip ci]'),
-  ]
+  ignores: [(message) => message.includes('chore(release):'), (message) => message.includes('[skip ci]')],
 };
