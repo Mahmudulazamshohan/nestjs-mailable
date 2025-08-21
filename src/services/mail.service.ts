@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Content, MailTransport, Address } from '../interfaces/mail.interface';
+import { Content, MailTransport, Address, TemplateEngine } from '../interfaces/mail.interface';
 import { MailConfigService } from './mail-config.service';
 import { MailTransportFactory } from '../factories/mail-transport.factory';
+import { Mailable } from '../classes/mailable';
 import {
   TemplateEngineFactory,
   HandlebarsTemplateEngine,
-  MarkdownTemplateEngine,
-  MjmlTemplateEngine,
+  EjsTemplateEngine,
+  PugTemplateEngine,
 } from './template.service';
 
 /**
@@ -15,7 +16,7 @@ import {
 @Injectable()
 export class MailService {
   private transport: MailTransport;
-  private templateEngine: any;
+  private templateEngine: TemplateEngine;
   private templateDir: string;
   private mainFile: string;
 
@@ -30,62 +31,57 @@ export class MailService {
     private transportFactory: MailTransportFactory,
     private templateEngineFactory: TemplateEngineFactory,
   ) {
-    // Get template config from MailConfigService
-    const templateConfig = this.configService.getTemplateConfig
-      ? this.configService.getTemplateConfig()
-      : { dir: './templates', main: 'main.hbs', type: 'handlebars' };
-    this.templateDir = templateConfig.dir;
-    this.mainFile = templateConfig.main;
     this.initializeTransport();
-    this.initializeTemplateEngine(templateConfig.type);
+    this.initializeTemplateEngine();
   }
 
   /**
    * Returns a MailSender for fluent address configuration.
    * @param address Recipient address(es).
    */
-  async to(address: string | Address | Array<string | Address>): Promise<MailSender> {
+  to(address: string | Address | Array<string | Address>): MailSender {
     return new MailSender(this).to(address);
   }
 
   /**
-   * Sends an email using the provided mailable content.
+   * Sends an email using the provided mailable content or Mailable instance.
    * Renders template if specified.
-   * @param mailable The email content and metadata.
+   * @param mailable The email content, metadata, or Mailable instance.
    */
-  async send(mailable: Content): Promise<any> {
+  async send(mailable: Content | Mailable): Promise<any> {
+    let content: Content;
+
+    // Check if it's a Mailable instance
+    if (mailable instanceof Mailable) {
+      content = await mailable.build();
+    } else {
+      content = mailable;
+    }
+
     // Process template if needed
-    if (mailable.template && mailable.context) {
-      const renderedHtml = await this.templateEngine.render(mailable.template, mailable.context);
-      mailable.html = renderedHtml;
+    if (content.template && content.context) {
+      const renderedHtml = await this.templateEngine.render(content.template, content.context);
+      content.html = renderedHtml;
     }
 
     // Apply global from if not set
-    if (!mailable.from) {
+    if (!content.from) {
       const globalFrom = this.configService.getGlobalFrom();
       if (globalFrom) {
-        mailable.from = globalFrom;
+        content.from = globalFrom;
       }
     }
 
+    // Apply envelope customizations if present
+    if (content.metadata?.envelopeCustomizations) {
+      // For now, we'll store these for potential future use
+      // In a real implementation, you might apply these to the actual transport message
+    }
+
     // Send the email
-    const result = await this.transport.send(mailable);
+    const result = await this.transport.send(content);
 
     return result;
-  }
-
-  /**
-   * Returns a new MailService instance for a specific mailer config.
-   * @param name The mailer configuration name.
-   */
-  mailer(name: string): MailService {
-    const mailerConfig = this.configService.getMailerConfig(name);
-    const transport = this.transportFactory.createTransport(mailerConfig);
-
-    const newService = new MailService(this.configService, this.transportFactory, this.templateEngineFactory);
-    newService.transport = transport;
-
-    return newService;
   }
 
   /**
@@ -99,31 +95,50 @@ export class MailService {
    * Initializes the mail transport using config.
    */
   private initializeTransport(): void {
-    const config = this.configService.getMailerConfig();
+    const config = this.configService.getTransportConfig();
     this.transport = this.transportFactory.createTransport(config);
   }
 
   /**
-   * Initializes the template engine based on config type.
-   * @param type The template engine type ('handlebars', 'markdown', 'mjml').
+   * Initializes the template engine based on config.
    */
-  private initializeTemplateEngine(type?: string): void {
-    // Use type from config, default to handlebars
-    let engine: any;
-    switch (type) {
-      case 'markdown':
-        engine = new MarkdownTemplateEngine(this.templateDir, this.mainFile);
-        break;
-      case 'mjml':
-        engine = new MjmlTemplateEngine(this.templateDir, this.mainFile);
-        break;
-      case 'handlebars':
-      default:
-        engine = new HandlebarsTemplateEngine(this.templateDir, this.mainFile);
-        break;
+  private initializeTemplateEngine(): void {
+    const templateConfig = this.configService.getTemplateConfig();
+
+    if (!templateConfig) {
+      // Use default template engine if no config provided
+      this.templateEngine = new HandlebarsTemplateEngine('./templates', 'main.hbs');
+      return;
     }
-    this.templateEngineFactory.registerEngine(type || 'handlebars', engine);
-    this.templateEngine = engine;
+
+    this.templateDir = templateConfig.directory;
+    const engineType = templateConfig.engine;
+
+    // Validate supported engine types
+    if (!this.templateEngineFactory.isEngineSupported(engineType)) {
+      throw new Error(
+        `Unsupported template engine '${engineType}'. Supported engines: ${this.templateEngineFactory.getSupportedEngines().join(', ')}`,
+      );
+    }
+
+    try {
+      switch (engineType) {
+        case 'ejs':
+          this.templateEngine = new EjsTemplateEngine(this.templateDir, 'main.ejs');
+          break;
+        case 'pug':
+          this.templateEngine = new PugTemplateEngine(this.templateDir, 'main.pug', templateConfig);
+          break;
+        case 'handlebars':
+        default:
+          this.templateEngine = new HandlebarsTemplateEngine(this.templateDir, 'main.hbs', templateConfig);
+          break;
+      }
+
+      this.templateEngineFactory.registerEngine(engineType, this.templateEngine);
+    } catch (error) {
+      throw new Error(`Failed to initialize template engine '${engineType}': ${(error as Error).message}`);
+    }
   }
 }
 
@@ -176,15 +191,24 @@ export class MailSender {
 
   /**
    * Sends the email with the configured addresses and content.
-   * @param mailable The email content and metadata.
+   * @param mailable The email content, metadata, or Mailable instance.
    */
-  async send(mailable: Content | any): Promise<any> {
+  async send(mailable: Content | Mailable): Promise<any> {
+    let content: Content;
+
+    // Check if it's a Mailable instance
+    if (mailable instanceof Mailable) {
+      content = await mailable.build();
+    } else {
+      content = mailable;
+    }
+
     // Merge the addresses with the mailable content
     const finalContent = {
-      ...mailable,
-      to: this.content.to || mailable.to,
-      cc: this.content.cc || mailable.cc,
-      bcc: this.content.bcc || mailable.bcc,
+      ...content,
+      to: this.content.to || content.to,
+      cc: this.content.cc || content.cc,
+      bcc: this.content.bcc || content.bcc,
     };
 
     return await this.mailService.send(finalContent);

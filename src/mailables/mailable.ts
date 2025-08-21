@@ -2,7 +2,7 @@ import { Content } from '../interfaces/mail.interface';
 
 /**
  * @class Mailable
- * @description Abstract Mailable class inspired by Laravel.
+ * @description Abstract Mailable class for building email content.
  *              Extend this class to define your email's content, view, and metadata.
  *              It provides a fluent interface for configuring various aspects of an email.
  */
@@ -21,7 +21,7 @@ export abstract class Mailable {
    * @param context Optional. An object containing data to be passed to the template.
    * @returns The current Mailable instance for chaining.
    */
-  protected view(template: string, context?: Record<string, any>): this {
+  protected view(template: string, context?: Record<string, unknown>): this {
     this.content.template = template;
     if (context) {
       this.content.context = { ...this.content.context, ...context };
@@ -36,9 +36,9 @@ export abstract class Mailable {
    * @param value Optional. The value for the specified key, if `keyOrData` is a string.
    * @returns The current Mailable instance for chaining.
    */
-  protected with(key: string, value: any): this;
-  protected with(data: Record<string, any>): this;
-  protected with(keyOrData: string | Record<string, any>, value?: any): this {
+  protected with(key: string, value: unknown): this;
+  protected with(data: Record<string, unknown>): this;
+  protected with(keyOrData: string | Record<string, unknown>, value?: unknown): this {
     if (!this.content.context) {
       this.content.context = {};
     }
@@ -92,7 +92,7 @@ export abstract class Mailable {
    * @param options Optional. Additional options for the attachment (e.g., filename, contentType).
    * @returns The current Mailable instance for chaining.
    */
-  protected attach(path: string, options?: any): this {
+  protected attach(path: string, options?: Record<string, unknown>): this {
     if (!this.content.attachments) {
       this.content.attachments = [];
     }
@@ -108,7 +108,7 @@ export abstract class Mailable {
    * @param options Optional. Additional options for the attachment (e.g., contentType).
    * @returns The current Mailable instance for chaining.
    */
-  protected attachData(data: Buffer | string, filename: string, options?: any): this {
+  protected attachData(data: Buffer | string, filename: string, options?: Record<string, unknown>): this {
     if (!this.content.attachments) {
       this.content.attachments = [];
     }
@@ -153,7 +153,7 @@ export abstract class Mailable {
    * @param value The metadata value.
    * @returns The current Mailable instance for chaining.
    */
-  protected metadata(key: string, value: any): this {
+  protected metadata(key: string, value: unknown): this {
     if (!this.content.metadata) {
       this.content.metadata = {};
     }

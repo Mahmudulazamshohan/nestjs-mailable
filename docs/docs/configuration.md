@@ -11,20 +11,29 @@ Learn how to configure NestJS Mailable for different environments and transport 
 ### Basic Configuration
 
 ```typescript
-import { MailModule } from 'nestjs-mailable';
+import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
 
 @Module({
   imports: [
     MailModule.forRoot({
-      config: {
-        default: 'smtp', // Default mailer to use
-        mailers: {
-          // Define your mailers here
-        },
-        from: {
-          address: 'noreply@yourapp.com',
-          name: 'Your App'
+      transport: {
+        type: TransportType.SMTP,
+        host: 'localhost',
+        port: 1025,
+        ignoreTLS: true,
+        secure: false,
+        auth: {
+          user: 'test',
+          pass: 'test'
         }
+      },
+      from: {
+        address: 'noreply@yourapp.com',
+        name: 'Your App'
+      },
+      templates: {
+        engine: TEMPLATE_ENGINE.HANDLEBARS,
+        directory: './templates'
       }
     })
   ],
@@ -38,29 +47,31 @@ For dynamic configuration using environment variables or external services:
 
 ```typescript
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailConfiguration } from 'nestjs-mailable';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     MailModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        default: configService.get('MAIL_MAILER', 'smtp'),
-        mailers: {
-          smtp: {
-            transport: 'smtp',
-            host: configService.get('MAIL_HOST'),
-            port: configService.get('MAIL_PORT', 587),
-            secure: configService.get('MAIL_SECURE') === 'true',
-            auth: {
-              user: configService.get('MAIL_USERNAME'),
-              pass: configService.get('MAIL_PASSWORD'),
-            },
+      useFactory: async (configService: ConfigService): Promise<MailConfiguration> => ({
+        transport: {
+          type: configService.get('MAIL_TRANSPORT', TransportType.SMTP),
+          host: configService.get('MAIL_HOST'),
+          port: configService.get('MAIL_PORT', 587),
+          secure: configService.get('MAIL_SECURE') === 'true',
+          auth: {
+            user: configService.get('MAIL_USERNAME'),
+            pass: configService.get('MAIL_PASSWORD'),
           },
         },
         from: {
           address: configService.get('MAIL_FROM_ADDRESS'),
           name: configService.get('MAIL_FROM_NAME'),
+        },
+        templates: {
+          engine: configService.get('TEMPLATE_ENGINE', TEMPLATE_ENGINE.HANDLEBARS) as any,
+          directory: path.join(__dirname, '../templates'),
         },
       }),
       inject: [ConfigService],
@@ -77,20 +88,14 @@ Perfect for most email providers like Gmail, Outlook, or custom SMTP servers.
 
 ```typescript
 {
-  mailers: {
-    smtp: {
-      transport: 'smtp',
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: 'your-email@gmail.com',
-        pass: 'your-app-password' // Use app-specific password for Gmail
-      },
-      // Optional: Connection pool settings
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100
+  transport: {
+    type: TransportType.SMTP,
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: 'your-email@gmail.com',
+      pass: 'your-app-password' // Use app-specific password for Gmail
     }
   }
 }
@@ -142,17 +147,15 @@ For high-volume email sending with AWS Simple Email Service.
 
 ```typescript
 {
-  mailers: {
-    ses: {
-      transport: 'ses',
-      options: {
-        accessKeyId: 'your-access-key',
-        secretAccessKey: 'your-secret-key',
-        region: 'us-east-1',
-        // Optional: Custom SES configuration
-        apiVersion: '2010-12-01'
-      }
-    }
+  transport: {
+    type: TransportType.SES,
+    region: 'us-east-1',
+    credentials: {
+      accessKeyId: 'your-access-key',
+      secretAccessKey: 'your-secret-key'
+    },
+    // Optional: Custom SES endpoint (for LocalStack)
+    endpoint: 'http://localhost:4566'
   }
 }
 ```
@@ -163,51 +166,41 @@ For transactional emails with Mailgun's reliable delivery.
 
 ```typescript
 {
-  mailers: {
-    mailgun: {
-      transport: 'mailgun',
-      options: {
-        apiKey: 'your-mailgun-api-key',
-        domain: 'your-domain.com',
-        host: 'api.mailgun.net', // or 'api.eu.mailgun.net' for EU
-        // Optional: Additional settings
-        testMode: false
-      }
+  transport: {
+    type: TransportType.MAILGUN,
+    options: {
+      apiKey: 'your-mailgun-api-key',
+      domain: 'your-domain.com',
+      host: 'api.mailgun.net' // or 'api.eu.mailgun.net' for EU
     }
   }
 }
 ```
 
-## Multiple Mailers
+## Single Transport Configuration (v1.1+)
 
-Configure multiple mailers for different purposes:
+The new v1.1+ configuration format focuses on single transport per module instance:
 
 ```typescript
-{
-  default: 'smtp',
-  mailers: {
-    smtp: {
-      transport: 'smtp',
-      host: 'smtp.gmail.com',
-      // ... SMTP config
-    },
-    transactional: {
-      transport: 'ses',
-      options: {
-        // ... SES config for transactional emails
-      }
-    },
-    marketing: {
-      transport: 'mailgun',
-      options: {
-        // ... Mailgun config for marketing emails
-      }
+MailModule.forRoot({
+  transport: {
+    type: TransportType.SMTP,
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'your-email@gmail.com',
+      pass: 'your-app-password'
     }
+  },
+  from: {
+    address: 'noreply@yourapp.com',
+    name: 'Your App'
   }
-}
+})
 ```
 
-Use different mailers in your service:
+Use the configured transport in your service:
 
 ```typescript
 @Injectable()
@@ -215,22 +208,22 @@ export class EmailService {
   constructor(private mailService: MailService) {}
 
   async sendWelcomeEmail(user: User) {
-    // Uses default mailer (smtp)
-    await this.mailService.send({
-      to: { address: user.email },
-      subject: 'Welcome!',
-      html: '<p>Welcome to our platform!</p>'
-    });
+    await this.mailService
+      .to({ address: user.email })
+      .send({
+        subject: 'Welcome!',
+        html: '<p>Welcome to our platform!</p>'
+      });
   }
 
-  async sendMarketingEmail(user: User) {
-    // Uses specific mailer
-    const marketingMailer = this.mailService.mailer('marketing');
-    await marketingMailer.send({
-      to: { address: user.email },
-      subject: 'Special Offer!',
-      html: '<p>Check out our latest offers!</p>'
-    });
+  async sendTemplateEmail(user: User) {
+    await this.mailService
+      .to({ address: user.email })
+      .send({
+        subject: 'Special Offer!',
+        template: 'marketing/offer',
+        context: { userName: user.name }
+      });
   }
 }
 ```
@@ -241,14 +234,17 @@ Create a `.env` file for your configuration:
 
 ```bash
 # Mail Configuration
-MAIL_MAILER=smtp
+MAIL_TRANSPORT=smtp
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password
-MAIL_ENCRYPTION=tls
+MAIL_SECURE=false
 MAIL_FROM_ADDRESS=noreply@yourapp.com
 MAIL_FROM_NAME="Your App Name"
+
+# Template Configuration
+TEMPLATE_ENGINE=handlebars
 
 # SES Configuration (if using SES)
 AWS_ACCESS_KEY_ID=your-access-key
@@ -265,22 +261,27 @@ MAILGUN_SECRET=your-mailgun-api-key
 Configure template engines for your emails:
 
 ```typescript
-{
-  config: {
-    // ... other config
-    templates: {
-      engine: 'handlebars', // or 'ejs', 'pug', 'mjml'
-      directory: './templates',
-      options: {
-        // Engine-specific options
-        partials: './templates/partials',
-        helpers: {
-          uppercase: (str: string) => str.toUpperCase()
-        }
+MailModule.forRoot({
+  transport: {
+    type: TransportType.SMTP,
+    // ... transport config
+  },
+  templates: {
+    engine: TEMPLATE_ENGINE.HANDLEBARS, // or TEMPLATE_ENGINE.EJS, TEMPLATE_ENGINE.PUG
+    directory: './templates',
+    partials: {
+      header: './templates/partials/header',
+      footer: './templates/partials/footer'
+    },
+    options: {
+      helpers: {
+        uppercase: (str: string) => str.toUpperCase(),
+        currency: (amount: number) => `$${amount.toFixed(2)}`,
+        formatDate: (date: Date) => date.toLocaleDateString()
       }
     }
   }
-}
+})
 ```
 
 ## Production Considerations
@@ -297,17 +298,16 @@ Configure template engines for your emails:
 - Monitor email delivery rates
 - Set up proper error handling and retries
 
-### Monitoring
+### Testing Configuration
 ```typescript
-{
-  config: {
-    // ... other config
-    monitoring: {
-      enabled: true,
-      trackDelivery: true,
-      trackOpens: true,
-      trackClicks: true
-    }
+// Use fake transport for testing
+MailModule.forRoot({
+  transport: {
+    type: 'fake' as any, // For testing
+  },
+  from: {
+    address: 'test@example.com',
+    name: 'Test App'
   }
-}
+})
 ```

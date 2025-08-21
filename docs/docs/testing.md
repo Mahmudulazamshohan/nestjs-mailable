@@ -1,523 +1,435 @@
 ---
-sidebar_position: 4
+sidebar_position: 6
 ---
 
 # Testing
 
-Learn how to effectively test your email functionality with NestJS Mailable's built-in testing utilities.
+Test your emails easily with the built-in fake mailer. No emails are actually sent during testing.
 
-## MailFake - Testing Made Easy
+## Basic Testing
 
-MailFake allows you to test email functionality without actually sending emails, providing comprehensive testing utilities for email workflows.
-
-### Basic Testing Setup
+Use `mailService.fake()` to capture emails instead of sending them:
 
 ```typescript
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { MailService } from 'nestjs-mailable';
-import { UserService } from './user.service';
 
-describe('UserService', () => {
-  let userService: UserService;
+describe('EmailService', () => {
   let mailService: MailService;
+  let mailFake: any;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [UserService, MailService],
+    const module = await Test.createTestingModule({
+      // your module setup
     }).compile();
 
-    userService = module.get<UserService>(UserService);
     mailService = module.get<MailService>(MailService);
+    mailFake = mailService.fake();
   });
 
-  it('should send welcome email after registration', async () => {
-    // Enable fake mode
-    const fake = mailService.fake();
-
-    // Perform action that sends email
-    await userService.registerUser({
-      name: 'John Doe',
-      email: 'john@example.com'
+  it('should send welcome email', async () => {
+    // Send email
+    await mailService.send({
+      to: 'user@example.com',
+      subject: 'Welcome!',
+      html: '<p>Welcome to our app!</p>'
     });
 
-    // Assert email was sent
-    fake.assertSentCount(1);
-    fake.assertSent((mail) => mail.subject === 'Welcome John Doe!');
-    fake.assertSent((mail) => mail.to.address === 'john@example.com');
+    // Check it was sent
+    expect(mailFake.getSentMails()).toHaveLength(1);
+    
+    const sentEmail = mailFake.getSentMails()[0];
+    expect(sentEmail.to).toBe('user@example.com');
+    expect(sentEmail.subject).toBe('Welcome!');
   });
 });
 ```
 
-## MailFake Assertions
+## Fake Mailer Methods
 
-### Count Assertions
+### getSentMails()
+Get all emails that were "sent":
 
 ```typescript
 it('should send multiple emails', async () => {
-  const fake = mailService.fake();
+  await mailService.send({ to: 'user1@example.com', subject: 'Hello' });
+  await mailService.send({ to: 'user2@example.com', subject: 'Hi' });
 
-  await userService.sendBulkEmails(['user1@example.com', 'user2@example.com']);
-
-  // Assert specific count
-  fake.assertSentCount(2);
-
-  // Assert minimum count
-  fake.assertSentCountMin(1);
-
-  // Assert maximum count
-  fake.assertSentCountMax(5);
-
-  // Assert no emails sent
-  fake.assertNothingSent();
+  const sentEmails = mailFake.getSentMails();
+  expect(sentEmails).toHaveLength(2);
+  expect(sentEmails[0].to).toBe('user1@example.com');
+  expect(sentEmails[1].to).toBe('user2@example.com');
 });
 ```
 
-### Content Assertions
+### assertSentCount()
+Check exact number of emails sent:
+
+```typescript
+it('should send correct number of emails', async () => {
+  await mailService.send({ to: 'user@example.com', subject: 'Test' });
+  
+  mailFake.assertSentCount(1);  // Passes
+  mailFake.assertSentCount(2);  // Throws error
+});
+```
+
+### assertSent()
+Check that at least one email was sent, optionally with conditions:
 
 ```typescript
 it('should send email with correct content', async () => {
-  const fake = mailService.fake();
+  await mailService.send({
+    to: 'user@example.com',
+    subject: 'Welcome!',
+    tags: ['welcome']
+  });
 
-  await userService.sendOrderConfirmation(order);
+  // Check any email was sent
+  mailFake.assertSent();
 
-  // Assert by subject
-  fake.assertSent((mail) => mail.subject.includes('Order Confirmation'));
+  // Check email with condition
+  mailFake.assertSent((mail) => {
+    return mail.to === 'user@example.com' && 
+           mail.subject === 'Welcome!';
+  });
 
-  // Assert by recipient
-  fake.assertSent((mail) => mail.to.address === 'customer@example.com');
-
-  // Assert by content
-  fake.assertSent((mail) => mail.html?.includes('Thank you for your order'));
-
-  // Assert by tags
-  fake.assertSent((mail) => mail.tags?.includes('order'));
-
-  // Assert by metadata
-  fake.assertSent((mail) => mail.metadata?.order_id === order.id);
+  // Check email has specific tag
+  mailFake.assertSent((mail) => {
+    return mail.tags?.includes('welcome');
+  });
 });
 ```
 
-### Complex Assertions
+## Testing Different Email Types
 
+### Direct Content
 ```typescript
-it('should send personalized welcome email', async () => {
-  const fake = mailService.fake();
-  const user = { name: 'Jane Smith', email: 'jane@example.com', vip: true };
+it('should send HTML email', async () => {
+  await mailService.send({
+    to: 'user@example.com',
+    subject: 'HTML Email',
+    html: '<h1>Hello World</h1>'
+  });
 
-  await userService.sendWelcomeEmail(user);
+  mailFake.assertSent((mail) => {
+    return mail.html?.includes('<h1>Hello World</h1>');
+  });
+});
+```
 
-  fake.assertSent((mail) => {
-    return mail.subject === 'Welcome Jane Smith!' &&
-           mail.to.address === 'jane@example.com' &&
-           mail.tags?.includes('vip') &&
-           mail.metadata?.user_type === 'premium';
+### Template Emails
+```typescript
+it('should send template email', async () => {
+  await mailService.send({
+    to: 'user@example.com',
+    subject: 'Template Email',
+    template: 'welcome',
+    context: { name: 'John' }
+  });
+
+  mailFake.assertSent((mail) => {
+    return mail.template === 'welcome' &&
+           mail.context?.name === 'John';
+  });
+});
+```
+
+### Fluent API
+```typescript
+it('should send email with fluent API', async () => {
+  await mailService
+    .to('user@example.com')
+    .cc('manager@example.com')
+    .bcc('admin@example.com')
+    .send({
+      subject: 'Fluent Email',
+      html: '<p>Test email</p>'
+    });
+
+  mailFake.assertSent((mail) => {
+    return mail.to === 'user@example.com' &&
+           mail.cc === 'manager@example.com' &&
+           mail.bcc === 'admin@example.com';
   });
 });
 ```
 
 ## Testing Mailable Classes
 
-### Unit Testing Mailables
-
 ```typescript
-import { WelcomeMail } from './welcome.mail';
+import { WelcomeEmail } from './welcome-email';
 
-describe('WelcomeMail', () => {
-  it('should build welcome email correctly', () => {
-    const user = { name: 'John Doe', email: 'john@example.com' };
-    const welcomeMail = new WelcomeMail(user);
-    const content = welcomeMail.render();
-
-    expect(content.subject).toBe('Welcome John Doe!');
-    expect(content.from?.address).toBe('welcome@yourapp.com');
-    expect(content.template).toBe('emails/welcome');
-    expect(content.context?.userName).toBe('John Doe');
-    expect(content.tags).toContain('welcome');
-    expect(content.tags).toContain('onboarding');
-  });
-
-  it('should include correct metadata', () => {
-    const user = { name: 'John Doe', email: 'john@example.com', id: 123 };
-    const welcomeMail = new WelcomeMail(user);
-    const content = welcomeMail.render();
-
-    expect(content.metadata?.user_id).toBe(123);
-    expect(content.metadata?.email_type).toBe('welcome');
-  });
-
-  it('should handle different user types', () => {
-    const vipUser = { 
-      name: 'VIP User', 
-      email: 'vip@example.com', 
-      type: 'premium' 
-    };
-    const welcomeMail = new WelcomeMail(vipUser);
-    const content = welcomeMail.render();
-
-    expect(content.tags).toContain('vip');
-    expect(content.subject).toContain('VIP');
-  });
-});
-```
-
-### Testing with Dependencies
-
-```typescript
-describe('OrderConfirmationMail', () => {
-  let orderCalculator: OrderCalculatorService;
-
-  beforeEach(() => {
-    orderCalculator = {
-      calculateTotal: jest.fn().mockReturnValue(99.99),
-      calculateTax: jest.fn().mockReturnValue(8.99),
-    } as any;
-  });
-
-  it('should calculate order totals correctly', () => {
-    const order = { id: 1, items: [] };
+describe('WelcomeEmail', () => {
+  it('should send welcome email using Mailable', async () => {
     const user = { name: 'John', email: 'john@example.com' };
     
-    const mail = new OrderConfirmationMail(order, user, orderCalculator);
-    const content = mail.render();
+    await mailService.to(user.email).send(new WelcomeEmail(user));
 
-    expect(orderCalculator.calculateTotal).toHaveBeenCalledWith(order);
-    expect(content.context?.totalAmount).toBe(99.99);
-  });
-});
-```
-
-## Integration Testing
-
-### Testing Email Flows
-
-```typescript
-describe('User Registration Flow', () => {
-  let app: INestApplication;
-  let userService: UserService;
-  let mailService: MailService;
-
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-
-    userService = app.get<UserService>(UserService);
-    mailService = app.get<MailService>(MailService);
-  });
-
-  it('should send welcome and verification emails', async () => {
-    const fake = mailService.fake();
-
-    await userService.registerUser({
-      name: 'John Doe',
-      email: 'john@example.com',
-      password: 'password123'
+    mailFake.assertSent((mail) => {
+      return mail.subject?.includes('Welcome John!') &&
+             mail.template === 'emails/welcome';
     });
+  });
 
-    // Assert welcome email
-    fake.assertSent((mail) => 
-      mail.subject.includes('Welcome') && 
-      mail.tags?.includes('welcome')
-    );
+  it('should include correct template data', async () => {
+    const user = { name: 'Jane', email: 'jane@example.com' };
+    
+    await mailService.to(user.email).send(new WelcomeEmail(user));
 
-    // Assert verification email
-    fake.assertSent((mail) => 
-      mail.subject.includes('Verify') && 
-      mail.tags?.includes('verification')
-    );
-
-    fake.assertSentCount(2);
+    const sentEmail = mailFake.getSentMails()[0];
+    expect(sentEmail.context?.user).toEqual(user);
+    expect(sentEmail.context?.appName).toBe('My App');
   });
 });
 ```
 
-### Testing Email Templates
+## Testing Email Properties
+
+### Check Recipients
+```typescript
+it('should send to multiple recipients', async () => {
+  await mailService.send({
+    to: ['user1@example.com', 'user2@example.com'],
+    subject: 'Bulk Email'
+  });
+
+  mailFake.assertSent((mail) => {
+    return Array.isArray(mail.to) && mail.to.length === 2;
+  });
+});
+```
+
+### Check Attachments
+```typescript
+it('should include attachments', async () => {
+  await mailService.send({
+    to: 'user@example.com',
+    subject: 'Email with Attachment',
+    attachments: [
+      { filename: 'test.pdf', path: './test.pdf' }
+    ]
+  });
+
+  mailFake.assertSent((mail) => {
+    return mail.attachments?.length === 1 &&
+           mail.attachments[0].filename === 'test.pdf';
+  });
+});
+```
+
+### Check Headers and Metadata
+```typescript
+it('should include custom headers and tags', async () => {
+  await mailService.send({
+    to: 'user@example.com',
+    subject: 'Tagged Email',
+    headers: { 'X-Priority': '1' },
+    tags: ['important', 'urgent'],
+    metadata: { userId: '123' }
+  });
+
+  mailFake.assertSent((mail) => {
+    return mail.headers?.['X-Priority'] === '1' &&
+           mail.tags?.includes('important') &&
+           mail.metadata?.userId === '123';
+  });
+});
+```
+
+## Complete Test Example
 
 ```typescript
-describe('Email Templates', () => {
+import { Test, TestingModule } from '@nestjs/testing';
+import { MailModule, MailService, TransportType } from 'nestjs-mailable';
+
+describe('Email Integration Tests', () => {
+  let module: TestingModule;
   let mailService: MailService;
+  let mailFake: any;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [MailModule.forRoot({
-        config: {
-          default: 'smtp',
-          mailers: { /* config */ },
-          templates: {
-            engine: 'handlebars',
-            directory: './test-templates'
+    module = await Test.createTestingModule({
+      imports: [
+        MailModule.forRoot({
+          transport: {
+            type: TransportType.SMTP,
+            host: 'localhost',
+            port: 1025
+          },
+          from: {
+            address: 'test@example.com',
+            name: 'Test App'
           }
-        }
-      })],
+        })
+      ]
     }).compile();
 
     mailService = module.get<MailService>(MailService);
+    mailFake = mailService.fake();
   });
 
-  it('should render template with context data', async () => {
-    const fake = mailService.fake();
+  afterEach(async () => {
+    await module.close();
+  });
 
-    await mailService.send({
-      to: { address: 'test@example.com' },
-      subject: 'Template Test',
-      template: 'welcome',
-      context: {
+  describe('User Registration', () => {
+    it('should send welcome email after registration', async () => {
+      const user = {
         name: 'John Doe',
-        appName: 'Test App'
-      }
-    });
+        email: 'john@example.com'
+      };
 
-    const sentMail = fake.getSentMails()[0];
-    expect(sentMail.html).toContain('Hello John Doe');
-    expect(sentMail.html).toContain('Welcome to Test App');
-  });
-});
-```
-
-## Mock Transports for Testing
-
-### Creating Mock Transport
-
-```typescript
-import { MailTransport, Content } from 'nestjs-mailable';
-
-class MockTransport implements MailTransport {
-  public sentEmails: Content[] = [];
-
-  async send(content: Content): Promise<any> {
-    this.sentEmails.push(content);
-    return {
-      messageId: `mock-${Date.now()}`,
-      accepted: [content.to],
-      rejected: [],
-      response: '250 Message accepted'
-    };
-  }
-
-  getSentEmails(): Content[] {
-    return this.sentEmails;
-  }
-
-  reset(): void {
-    this.sentEmails = [];
-  }
-}
-```
-
-### Using Mock Transport in Tests
-
-```typescript
-describe('Email Service with Mock Transport', () => {
-  let emailService: EmailService;
-  let mockTransport: MockTransport;
-
-  beforeEach(async () => {
-    mockTransport = new MockTransport();
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        EmailService,
-        {
-          provide: MailTransportFactory,
-          useValue: {
-            createTransport: () => mockTransport
-          }
-        }
-      ],
-    }).compile();
-
-    emailService = module.get<EmailService>(EmailService);
-  });
-
-  it('should send email through mock transport', async () => {
-    await emailService.sendWelcomeEmail({
-      name: 'John Doe',
-      email: 'john@example.com'
-    });
-
-    expect(mockTransport.getSentEmails()).toHaveLength(1);
-    const sentEmail = mockTransport.getSentEmails()[0];
-    expect(sentEmail.subject).toBe('Welcome John Doe!');
-  });
-});
-```
-
-## Testing Error Scenarios
-
-### Testing Transport Failures
-
-```typescript
-describe('Email Error Handling', () => {
-  it('should handle transport connection errors', async () => {
-    const failingTransport = {
-      send: jest.fn().mockRejectedValue(new Error('Connection refused'))
-    };
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        MailService,
-        {
-          provide: MailTransportFactory,
-          useValue: {
-            createTransport: () => failingTransport
-          }
-        }
-      ],
-    }).compile();
-
-    const mailService = module.get<MailService>(MailService);
-
-    await expect(mailService.send({
-      to: { address: 'test@example.com' },
-      subject: 'Test',
-      html: '<p>Test</p>'
-    })).rejects.toThrow('Connection refused');
-  });
-
-  it('should retry failed emails', async () => {
-    let attempts = 0;
-    const retryingTransport = {
-      send: jest.fn().mockImplementation(() => {
-        attempts++;
-        if (attempts < 3) {
-          throw new Error('Temporary failure');
-        }
-        return { messageId: 'success' };
-      })
-    };
-
-    // Test retry logic implementation
-    // ... test code
-  });
-});
-```
-
-### Testing Invalid Email Addresses
-
-```typescript
-describe('Email Validation', () => {
-  it('should reject invalid email addresses', async () => {
-    const mailService = // ... get mail service
-
-    await expect(mailService.send({
-      to: { address: 'invalid-email' },
-      subject: 'Test',
-      html: '<p>Test</p>'
-    })).rejects.toThrow('Invalid email address');
-  });
-
-  it('should handle bounced emails', async () => {
-    const bouncingTransport = {
-      send: jest.fn().mockResolvedValue({
-        messageId: 'bounced',
-        rejected: ['bounced@example.com'],
-        accepted: []
-      })
-    };
-
-    // Test bounce handling
-    // ... test code
-  });
-});
-```
-
-## Performance Testing
-
-### Testing Email Volume
-
-```typescript
-describe('Email Performance', () => {
-  it('should handle bulk email sending', async () => {
-    const fake = mailService.fake();
-    const recipients = Array.from({ length: 1000 }, (_, i) => 
-      `user${i}@example.com`
-    );
-
-    const start = Date.now();
-    await emailService.sendBulkEmails(recipients, {
-      subject: 'Newsletter',
-      html: '<p>Newsletter content</p>'
-    });
-    const duration = Date.now() - start;
-
-    fake.assertSentCount(1000);
-    expect(duration).toBeLessThan(5000); // Should complete within 5 seconds
-  });
-});
-```
-
-### Memory Usage Testing
-
-```typescript
-describe('Memory Usage', () => {
-  it('should not leak memory during bulk operations', async () => {
-    const initialMemory = process.memoryUsage().heapUsed;
-    
-    for (let i = 0; i < 100; i++) {
-      await emailService.sendEmail({
-        to: { address: `test${i}@example.com` },
-        subject: 'Memory Test',
-        html: '<p>Test content</p>'
+      // Simulate user registration
+      await mailService.send({
+        to: user.email,
+        subject: `Welcome ${user.name}!`,
+        template: 'welcome',
+        context: { user },
+        tags: ['registration', 'welcome']
       });
-    }
 
-    // Force garbage collection if available
-    if (global.gc) {
-      global.gc();
-    }
+      // Assert email was sent
+      mailFake.assertSentCount(1);
+      
+      mailFake.assertSent((mail) => {
+        return mail.to === user.email &&
+               mail.subject === `Welcome ${user.name}!` &&
+               mail.template === 'welcome' &&
+               mail.context?.user === user &&
+               mail.tags?.includes('registration');
+      });
+    });
+  });
 
-    const finalMemory = process.memoryUsage().heapUsed;
-    const memoryIncrease = finalMemory - initialMemory;
+  describe('Order Confirmation', () => {
+    it('should send order confirmation with receipt', async () => {
+      const order = {
+        id: 'ORDER-123',
+        total: 99.99,
+        items: [{ name: 'Product 1', price: 99.99 }]
+      };
 
-    // Memory increase should be reasonable (less than 50MB)
-    expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
+      await mailService.send({
+        to: 'customer@example.com',
+        subject: `Order Confirmation #${order.id}`,
+        template: 'order-confirmation',
+        context: { order },
+        tags: ['order', 'confirmation'],
+        attachments: [
+          { filename: 'receipt.pdf', path: './receipts/receipt.pdf' }
+        ]
+      });
+
+      mailFake.assertSentCount(1);
+      
+      const sentEmail = mailFake.getSentMails()[0];
+      expect(sentEmail.subject).toBe('Order Confirmation #ORDER-123');
+      expect(sentEmail.context?.order).toEqual(order);
+      expect(sentEmail.attachments).toHaveLength(1);
+      expect(sentEmail.attachments[0].filename).toBe('receipt.pdf');
+    });
+  });
+
+  describe('Bulk Emails', () => {
+    it('should send newsletter to multiple subscribers', async () => {
+      const subscribers = [
+        { email: 'user1@example.com', name: 'User 1' },
+        { email: 'user2@example.com', name: 'User 2' },
+        { email: 'user3@example.com', name: 'User 3' }
+      ];
+
+      // Send newsletter to all subscribers
+      for (const subscriber of subscribers) {
+        await mailService.send({
+          to: subscriber.email,
+          subject: 'Weekly Newsletter',
+          template: 'newsletter',
+          context: { subscriber },
+          tags: ['newsletter', 'weekly']
+        });
+      }
+
+      mailFake.assertSentCount(3);
+
+      // Check each email was sent correctly
+      const sentEmails = mailFake.getSentMails();
+      subscribers.forEach((subscriber, index) => {
+        expect(sentEmails[index].to).toBe(subscriber.email);
+        expect(sentEmails[index].subject).toBe('Weekly Newsletter');
+        expect(sentEmails[index].context?.subscriber).toEqual(subscriber);
+      });
+    });
+  });
+
+  describe('Error Cases', () => {
+    it('should handle missing template gracefully', async () => {
+      await expect(
+        mailService.send({
+          to: 'user@example.com',
+          subject: 'Test',
+          template: 'nonexistent-template',
+          context: {}
+        })
+      ).rejects.toThrow();
+
+      // No emails should be sent if there's an error
+      mailFake.assertSentCount(0);
+    });
   });
 });
 ```
 
-## Best Practices for Testing
+## Testing Tips
 
-### 1. Use MailFake for Unit Tests
-Always use `mailService.fake()` for isolated unit tests to avoid sending real emails.
+### 1. Reset Between Tests
+The fake mailer keeps all sent emails until you get a new fake instance:
 
-### 2. Test Email Content Thoroughly
 ```typescript
-fake.assertSent((mail) => {
-  expect(mail.subject).toMatch(/Welcome .+!/);
-  expect(mail.html).toContain('verification link');
-  expect(mail.tags).toContain('onboarding');
-  expect(mail.metadata?.user_id).toBeDefined();
-  return true;
+beforeEach(() => {
+  mailFake = mailService.fake();  // Fresh fake for each test
 });
 ```
 
-### 3. Test Different Scenarios
-- Happy path
-- Error conditions
-- Edge cases (empty data, special characters)
-- Different user types/roles
+### 2. Test Email Content, Not Templates
+Focus on testing the data passed to templates, not template rendering:
 
-### 4. Use Descriptive Test Names
 ```typescript
-it('should send welcome email with verification link for new users', () => {
-  // Test implementation
+// Good
+mailFake.assertSent((mail) => {
+  return mail.context?.userName === 'John';
 });
 
-it('should include VIP badge in welcome email for premium users', () => {
-  // Test implementation
+// Avoid testing rendered HTML (that's the template engine's job)
+```
+
+### 3. Use Specific Assertions
+Be specific about what you're testing:
+
+```typescript
+// Good - specific assertion
+mailFake.assertSent((mail) => {
+  return mail.to === 'user@example.com' &&
+         mail.tags?.includes('welcome');
+});
+
+// Avoid - too general
+mailFake.assertSent();
+```
+
+### 4. Test Different Scenarios
+Test both success and error cases:
+
+```typescript
+describe('Password Reset', () => {
+  it('should send reset email for valid user', async () => {
+    // Test success case
+  });
+
+  it('should not send email for invalid user', async () => {
+    // Test error case
+  });
 });
 ```
 
-### 5. Clean Up After Tests
-```typescript
-afterEach(() => {
-  // Reset mail fake state
-  mailService.fake()?.reset();
-  
-  // Clear any test data
-  jest.clearAllMocks();
-});
-```
+The fake mailer makes it easy to test your email functionality without actually sending emails or needing external services.

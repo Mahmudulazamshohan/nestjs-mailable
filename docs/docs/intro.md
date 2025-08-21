@@ -2,65 +2,52 @@
 sidebar_position: 1
 ---
 
-# NestJS Mailable
+# Getting Started
 
-A comprehensive NestJS mail package with modern design patterns for seamless, scalable email handling in enterprise applications.
-
-## Features
-
-- 🚀 **Object-oriented Mailable classes** - Clean, testable email composition
-- 📧 **Multiple transport support** - SMTP, SES, Mailgun out of the box
-- 🎨 **Template engines** - Handlebars, EJS, Pug, Markdown, MJML support
-- 🔄 **Async processing** - Background email processing support
-- 🧪 **Testing utilities** - MailFake for easy testing
-- 📊 **Built-in metrics** - Email tracking and analytics
-- 🎯 **Fluent API** - Intuitive email building interface
+NestJS Mailable is a simple and powerful email package for NestJS applications. Send emails using multiple transports (SMTP, SES, Mailgun) with template support and easy testing.
 
 ## Quick Start
 
-### Installation
+### 1. Install
 
 ```bash
 npm install nestjs-mailable
 ```
 
-### Basic Setup
+### 2. Import Module
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { MailModule } from 'nestjs-mailable';
+import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
 
 @Module({
   imports: [
     MailModule.forRoot({
-      config: {
-        default: 'smtp',
-        mailers: {
-          smtp: {
-            transport: 'smtp',
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            auth: {
-              user: 'your-email@gmail.com',
-              pass: 'your-app-password'
-            }
-          }
-        },
-        from: {
-          address: 'noreply@yourapp.com',
-          name: 'Your App Name'
+      transport: {
+        type: TransportType.SMTP,
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'your-email@gmail.com',
+          pass: 'your-password'
         }
+      },
+      from: {
+        address: 'noreply@yourapp.com',
+        name: 'Your App'
+      },
+      templates: {
+        engine: TEMPLATE_ENGINE.HANDLEBARS,
+        directory: './templates'
       }
     })
-  ],
+  ]
 })
 export class AppModule {}
 ```
 
-### Send Your First Email
-
-#### Using Fluent API
+### 3. Send Your First Email
 
 ```typescript
 import { Injectable } from '@nestjs/common';
@@ -70,102 +57,109 @@ import { MailService } from 'nestjs-mailable';
 export class UserService {
   constructor(private mailService: MailService) {}
 
-  async sendWelcomeEmail(user: { email: string; name: string }) {
-    await this.mailService
-      .to({ address: user.email, name: user.name })
-      .subject(`Welcome ${user.name}!`)
-      .html(`<h1>Welcome to our platform!</h1>
-             <p>Hi ${user.name}, thanks for joining us.</p>`)
-      .tag('welcome')
-      .tag('onboarding')
-      .send();
+  async sendWelcome() {
+    await this.mailService.to('user@example.com').send({
+      subject: 'Welcome!',
+      html: '<h1>Welcome to our app!</h1>'
+    });
   }
 }
 ```
 
-#### Using Mailable Classes
+## Three Ways to Send Emails
 
+### 1. Direct Content (Simple)
+
+```typescript
+// Send HTML email directly
+await this.mailService.send({
+  to: 'user@example.com',
+  subject: 'Hello!',
+  html: '<p>Hello World!</p>'
+});
+```
+
+### 2. Fluent API (Flexible)
+
+```typescript
+// Chain methods for complex emails
+await this.mailService
+  .to('user@example.com')
+  .cc('manager@example.com')
+  .bcc('admin@example.com')
+  .send({
+    subject: 'Team Update',
+    template: 'team-update',
+    context: { teamName: 'Development' }
+  });
+```
+
+### 3. Mailable Classes (Advanced)
+
+Choose between **Legacy Mailables** (simple) or **Advanced Mailables** (Laravel-style):
+
+#### Legacy Mailable (Simple)
 ```typescript
 import { Mailable } from 'nestjs-mailable';
 
 export class WelcomeMail extends Mailable {
-  constructor(private user: { email: string; name: string }) {
+  constructor(private user: any) {
     super();
   }
 
-  protected build() {
-    return this
-      .to({ address: this.user.email, name: this.user.name })
-      .subject(`Welcome ${this.user.name}!`)
-      .view('emails.welcome', {
-        userName: this.user.name,
-        appName: 'Your App',
-        loginUrl: 'https://yourapp.com/login'
-      })
+  build() {
+    return this.subject(`Welcome ${this.user.name}!`)
+      .view('welcome', { user: this.user })
       .tag('welcome');
   }
 }
 
-// Usage in service
-@Injectable()
-export class UserService {
-  constructor(private mailService: MailService) {}
+// Usage
+await this.mailService.send(new WelcomeMail(user));
+```
 
-  async sendWelcomeEmail(user: { email: string; name: string }) {
-    const welcomeMail = new WelcomeMail(user);
-    await this.mailService.send(welcomeMail);
+#### Advanced Mailable (Laravel-style)
+```typescript
+import { Mailable as AdvancedMailable, MailableEnvelope, MailableContent } from 'nestjs-mailable';
+
+export class WelcomeMail extends AdvancedMailable {
+  constructor(private user: any) {
+    super();
+  }
+
+  envelope(): MailableEnvelope {
+    return {
+      subject: `Welcome ${this.user.name}!`,
+      tags: ['welcome', 'onboarding']
+    };
+  }
+
+  content(): MailableContent {
+    return {
+      template: 'emails/welcome',
+      with: { user: this.user }
+    };
   }
 }
+
+// Usage
+await this.mailService.to(user.email).send(new WelcomeMail(user));
 ```
 
-#### Using Templates
+## Features
 
-Create a template file `templates/emails/welcome.hbs`:
-
-```handlebars
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Welcome {{userName}}!</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; }
-        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
-        .content { padding: 20px; }
-        .button { background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Welcome to {{appName}}!</h1>
-    </div>
-    <div class="content">
-        <p>Hello {{userName}},</p>
-        <p>Thank you for joining {{appName}}. We're excited to have you on board!</p>
-        <p>
-            <a href="{{loginUrl}}" class="button">Get Started</a>
-        </p>
-    </div>
-</body>
-</html>
-```
+- **Multiple Transports**: SMTP, Amazon SES, Mailgun
+- **Template Engines**: Handlebars, EJS, Pug
+- **Two Mailable Styles**: Simple legacy or advanced Laravel-style  
+- **Fluent API**: Chain methods for complex emails
+- **Testing Support**: Built-in fake mailer for testing
+- **Attachments**: File, data, and storage attachments
+- **TypeScript**: Full type support
 
 ## What's Next?
 
-- 📖 **[Configuration Guide](./configuration)** - Set up different mail transports
-- 🏗️ **[Mailable Classes](./mailables)** - Create reusable email templates
-- 🧪 **[Testing](./testing)** - Test your emails effectively
-- 🚀 **[Advanced Features](./advanced)** - Templates, monitoring, and more
-
-## Why Choose NestJS Mailable?
-
-### Modern Design Patterns
-Built with proven design patterns for elegant and maintainable email handling, following NestJS best practices.
-
-### Production Ready
-Comprehensive error handling, retry mechanisms, and monitoring capabilities for enterprise applications.
-
-### Developer Experience
-Type-safe APIs, extensive documentation, and debugging tools make development a breeze.
-
-### Flexible Architecture
-Modular design allows you to use only what you need, with easy extensibility for custom requirements.
+- **[Configuration](./configuration)** - Set up transports and templates
+- **[Basic Usage](./basic-usage)** - Learn the three sending methods
+- **[Mailable Classes](./mailables)** - Create reusable email classes
+- **[Templates](./templates)** - Use template engines
+- **[Testing](./testing)** - Test your emails

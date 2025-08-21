@@ -1,0 +1,154 @@
+doctype html
+html
+  head
+    title Order Shipped
+    style.
+      body {
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .container {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(120deg, #84fab0, #8fd3f4);
+        color: #2c3e50;
+        padding: 40px 30px;
+        text-align: center;
+      }
+      .content {
+        padding: 30px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 5px 15px;
+        background: #e0f7fa;
+        color: #0097a7;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+      .steps {
+        display: flex;
+        justify-content: space-between;
+        margin: 30px 0;
+        position: relative;
+      }
+      .steps:before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e0e0e0;
+        z-index: 1;
+      }
+      .step {
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+      .step-icon {
+        width: 40px;
+        height: 40px;
+        background: #bbdefb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        color: #1976d2;
+        font-weight: bold;
+      }
+      .step.active .step-icon {
+        background: #1976d2;
+        color: white;
+      }
+      .btn {
+        display: inline-block;
+        padding: 15px 30px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+      .order-details {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+
+  body
+    .container
+      .header
+        h1 Your Order Has Shipped! 📦
+        p Order ##{orderId} is on its way
+      
+      .content
+        h2 Hello #{customerEmail},
+        
+        p Great news! Your order 
+          strong #{orderName} 
+          | has been shipped and is on its way to you.
+        
+        .badge Shipped
+        
+        .steps
+          .step
+            .step-icon 1
+            div Ordered
+          .step.active
+            .step-icon 2
+            div Shipped
+          .step
+            .step-icon 3
+            div Delivered
+        
+        .order-details
+          h3 Order Details:
+          .detail-row
+            span Order ID:
+            strong ##{orderId}
+          .detail-row
+            span Item:
+            strong #{orderName}
+          .detail-row
+            span Price:
+            strong $#{orderPrice}
+          .detail-row
+            span Invoice:
+            strong #{invoiceNumber}
+        
+        p You can track your shipment using the tracking number provided by our shipping partner.
+        
+        center
+          a.btn(href=`https://yourapp.com/orders/${orderId}/track`) Track Your Order
+        
+        p If you have any questions, feel free to contact our support team.

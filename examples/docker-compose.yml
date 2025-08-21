@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # LocalStack - AWS services mock (including SES)
+  localstack:
+    container_name: nestjs-mailable-localstack
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # External services port range
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LOCALSTACK_HOST=localhost:4566
+      - EDGE_PORT=4566
+      - SERVICES=ses,s3,logs
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - nestjs-mailable
+
+  # MailHog - SMTP testing server (alternative to SES)
+  mailhog:
+    container_name: nestjs-mailable-mailhog
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - nestjs-mailable
+
+  # Email content viewer service
+  email-viewer:
+    container_name: nestjs-mailable-viewer
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./email-viewer:/app
+      - ./sent-emails:/app/sent-emails
+    ports:
+      - "3002:3000"
+    command: >
+      sh -c "
+        if [ ! -f package.json ]; then
+          npm init -y &&
+          npm install express cors fs-extra &&
+          npm install --save-dev nodemon;
+        fi;
+        npm start || node server.js
+      "
+    depends_on:
+      - localstack
+    networks:
+      - nestjs-mailable
+
+networks:
+  nestjs-mailable:
+    driver: bridge
+
+volumes:
+  localstack:

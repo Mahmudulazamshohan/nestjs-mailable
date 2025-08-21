@@ -1,33 +1,20 @@
 {
-  "name": "nestjs-mailable-examples",
+  "name": "examples",
   "version": "1.0.0",
-  "description": "Comprehensive examples for NestJS Mailable package",
-  "main": "all-examples.ts",
+  "main": "ses-mock-server.js",
   "scripts": {
-    "start": "ts-node all-examples.ts",
-    "start:basic": "ts-node basic-setup.ts",
-    "start:templates": "ts-node templates.ts",
-    "start:attachments": "ts-node attachments.ts",
-    "start:providers": "ts-node providers.ts",
-    "start:advanced": "ts-node advanced.ts",
-    "test": "ts-node test-examples.ts",
-    "build": "tsc",
-    "lint": "eslint *.ts --fix"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "cd nestjs-email-app && npx eslint src/**/*.ts",
+    "lint:fix": "cd nestjs-email-app && npx eslint src/**/*.ts --fix"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0",
-    "@nestjs/platform-express": "^10.0.0",
-    "nestjs-mailable": "file:../dist",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^8.0.0",
-    "ts-node": "^10.0.0",
-    "typescript": "^5.0.0"
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "fs-extra": "^11.3.1",
+    "node-fetch": "^3.3.2"
   }
 }

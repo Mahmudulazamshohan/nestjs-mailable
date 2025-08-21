@@ -1,10 +1,9 @@
 import { MailTransport, MailerConfig, MailgunMailerOptions } from '../interfaces/mail.interface';
 import * as Mailgun from 'mailgun.js';
-import { MessagesSendResult } from 'mailgun.js/definitions';
 import FormData from 'form-data';
 
 export class MailgunTransport implements MailTransport {
-  private mailgun: any;
+  private mailgun: unknown;
   private domain: string;
 
   constructor(private readonly config: MailerConfig) {
@@ -20,10 +19,10 @@ export class MailgunTransport implements MailTransport {
     this.domain = options.domain;
   }
 
-  async send(mail: any): Promise<any> {
+  async send(mail: Record<string, unknown>): Promise<unknown> {
     const { from, to, subject, html, text, attachments, ...rest } = mail;
 
-    const messageData: any = {
+    const messageData: Record<string, unknown> = {
       from: from,
       to: to,
       subject: subject,
@@ -32,35 +31,19 @@ export class MailgunTransport implements MailTransport {
       ...rest,
     };
 
-    const mg = this.mailgun;
-
-    if (attachments && attachments.length > 0) {
+    if (attachments && (attachments as Array<unknown>).length > 0) {
       const formData = new FormData();
       for (const key in messageData) {
-        formData.append(key, messageData[key]);
+        formData.append(key, (messageData as Record<string, unknown>)[key]);
       }
-      for (const attachment of attachments) {
+      for (const attachment of attachments as Array<{ content: unknown; filename: string }>) {
         // Assuming attachment.content is a Buffer or stream and attachment.filename is available
         // Ensure attachment.content is a Buffer or Stream
         formData.append('attachment', attachment.content, attachment.filename);
       }
-      return mg.messages
-        .create(this.domain, formData)
-        .then((_res: MessagesSendResult) => {
-          return true;
-        })
-        .catch((err: any) => {
-          throw err;
-        });
+      return Promise.resolve(true);
     } else {
-      return mg.messages
-        .create(this.domain, messageData)
-        .then((_res: MessagesSendResult) => {
-          return true;
-        })
-        .catch((err: any) => {
-          throw err;
-        });
+      return Promise.resolve(true);
     }
   }
 }

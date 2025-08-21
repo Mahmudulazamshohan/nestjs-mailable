@@ -1,13 +1,17 @@
-export * from './interfaces/mail.interface';
-export * from './services/mail.service';
-export * from './services/mail-config.service';
-export * from './services/template.service';
-export * from './factories/mail-transport.factory';
-export * from './builders/mailable.builder';
-export * from './mailables/mailable';
-export * from './transports';
-export * from './mail.module';
-
-export { MailableBuilder } from './builders/mailable.builder';
-export { Mailable } from './mailables/mailable';
+// Core services and module
+export { MailService } from './services/mail.service';
 export { MailModule } from './mail.module';
+
+// Interfaces and types
+export * from './interfaces/mail.interface';
+export * from './types/transport.type';
+
+// Constants
+export * from './constants/template.constants';
+export { Mailable } from './mailables/mailable';
+
+// Advanced mailable classes
+export { Mailable as MailableClass, AttachmentBuilder } from './classes/mailable';
+
+// Builder for fluent API
+export { MailableBuilder } from './builders/mailable.builder';

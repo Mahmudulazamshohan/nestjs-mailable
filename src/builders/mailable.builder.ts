@@ -60,7 +60,7 @@ export class MailableBuilder {
     return this;
   }
 
-  template(template: string, context?: Record<string, any>): MailableBuilder {
+  template(template: string, context?: Record<string, unknown>): MailableBuilder {
     this.content.template = template;
     if (context) {
       this.content.context = { ...this.content.context, ...context };
@@ -68,9 +68,9 @@ export class MailableBuilder {
     return this;
   }
 
-  with(key: string, value: any): MailableBuilder;
-  with(data: Record<string, any>): MailableBuilder;
-  with(keyOrData: string | Record<string, any>, value?: any): MailableBuilder {
+  with(key: string, value: unknown): MailableBuilder;
+  with(data: Record<string, unknown>): MailableBuilder;
+  with(keyOrData: string | Record<string, unknown>, value?: unknown): MailableBuilder {
     if (typeof keyOrData === 'string') {
       this.content.context = { ...this.content.context, [keyOrData]: value };
     } else {
@@ -128,9 +128,9 @@ export class MailableBuilder {
     return this;
   }
 
-  metadata(key: string, value: any): MailableBuilder;
-  metadata(data: Record<string, any>): MailableBuilder;
-  metadata(keyOrData: string | Record<string, any>, value?: any): MailableBuilder {
+  metadata(key: string, value: unknown): MailableBuilder;
+  metadata(data: Record<string, unknown>): MailableBuilder;
+  metadata(keyOrData: string | Record<string, unknown>, value?: unknown): MailableBuilder {
     if (!this.content.metadata) {
       this.content.metadata = {};
     }

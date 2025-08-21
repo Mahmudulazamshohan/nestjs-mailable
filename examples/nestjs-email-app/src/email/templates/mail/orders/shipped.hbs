@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Shipped</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border: 1px solid #eee;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+        .order-details {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Your Order Has Shipped! 📦</h1>
+        <p>Order #{{orderId}} is on its way</p>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{customerEmail}},</h2>
+        
+        <p>Great news! Your order <strong>{{orderName}}</strong> has been shipped and is on its way to you.</p>
+        
+        <div class="order-details">
+            <h3>Order Details:</h3>
+            <p><strong>Order ID:</strong> {{orderId}}</p>
+            <p><strong>Item:</strong> {{orderName}}</p>
+            <p><strong>Price:</strong> ${{orderPrice}}</p>
+            <p><strong>Invoice:</strong> {{invoiceNumber}}</p>
+        </div>
+        
+        <p>You can track your shipment using the tracking number provided by our shipping partner.</p>
+        
+        <a href="https://yourapp.com/orders/{{orderId}}/track" class="button">Track Your Order</a>
+        
+        <p>If you have any questions, feel free to contact our support team.</p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message from YourApp. Please do not reply to this email.</p>
+        <p>&copy; 2024 YourApp. All rights reserved.</p>
+    </div>
+</body>
+</html>

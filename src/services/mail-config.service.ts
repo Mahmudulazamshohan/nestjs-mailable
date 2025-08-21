@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { MailConfiguration, MailerConfig } from '../interfaces/mail.interface';
+import {
+  MailConfiguration,
+  TransportConfiguration,
+  TemplateConfiguration,
+  Address,
+} from '../interfaces/mail.interface';
+import { TransportType } from '../types/transport.type';
+import { TEMPLATE_ENGINE } from '../constants/template.constants';
 
 @Injectable()
 export class MailConfigService {
   private config: MailConfiguration;
-  getTemplateConfig: any;
 
   constructor(config?: MailConfiguration) {
     this.config = config || this.getDefaultConfig();
@@ -18,47 +24,41 @@ export class MailConfigService {
     return this.config;
   }
 
-  getDefaultMailer(): string {
-    return this.config.default;
+  getTransportConfig(): TransportConfiguration {
+    return this.config.transport;
   }
 
-  getMailerConfig(name?: string): MailerConfig {
-    const mailerName = name || this.config.default;
-    const mailerConfig = this.config.mailers[mailerName];
-
-    if (!mailerConfig) {
-      throw new Error(`Mailer configuration for '${mailerName}' not found`);
-    }
-
-    return mailerConfig;
-  }
-
-  getGlobalFrom(): { address: string; name?: string } | undefined {
+  getGlobalFrom(): Address | undefined {
     return this.config.from;
   }
 
-  getGlobalReplyTo(): { address: string; name?: string } | undefined {
+  getGlobalReplyTo(): Address | false | undefined {
     return this.config.replyTo;
+  }
+
+  getTemplateConfig(): TemplateConfiguration | undefined {
+    return this.config.templates;
   }
 
   private getDefaultConfig(): MailConfiguration {
     return {
-      default: 'smtp',
-      mailers: {
-        smtp: {
-          transport: 'smtp',
-          host: process.env.MAIL_HOST || 'localhost',
-          port: parseInt(process.env.MAIL_PORT || '587'),
-          secure: process.env.MAIL_SECURE === 'true',
-          auth: {
-            user: process.env.MAIL_USERNAME || '',
-            pass: process.env.MAIL_PASSWORD || '',
-          },
+      transport: {
+        type: TransportType.SMTP,
+        host: process.env.MAIL_HOST || 'localhost',
+        port: parseInt(process.env.MAIL_PORT || '587'),
+        secure: process.env.MAIL_SECURE === 'true',
+        auth: {
+          user: process.env.MAIL_USERNAME || '',
+          pass: process.env.MAIL_PASSWORD || '',
         },
       },
       from: {
         address: process.env.MAIL_FROM_ADDRESS || 'hello@example.com',
         name: process.env.MAIL_FROM_NAME || 'Example App',
+      },
+      templates: {
+        engine: TEMPLATE_ENGINE.HANDLEBARS,
+        directory: './templates',
       },
     };
   }

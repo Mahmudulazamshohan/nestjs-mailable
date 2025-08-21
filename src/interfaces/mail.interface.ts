@@ -1,19 +1,56 @@
 import { TransportType } from '../types/transport.type';
+import { TemplateEngineType } from '../constants/template.constants';
 
 // Core interfaces for mail functionality
 export interface MailConfiguration {
-  default: string;
-  mailers: Record<string, MailerConfig>;
-  from?: {
-    address: string;
-    name?: string;
+  transport: TransportConfiguration;
+  from?: Address;
+  replyTo?: Address | false;
+  templates?: TemplateConfiguration;
+}
+
+export interface TransportConfiguration {
+  type: TransportType;
+  // SMTP specific options
+  host?: string;
+  port?: number;
+  secure?: boolean;
+  ignoreTLS?: boolean;
+  auth?: {
+    user?: string;
+    pass?: string;
   };
-  replyTo?: {
-    address: string;
-    name?: string;
+  // SES specific options
+  endpoint?: string;
+  region?: string;
+  credentials?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    sessionToken?: string;
+  };
+  // Mailgun specific options
+  options?: MailgunOptions;
+}
+
+export interface MailgunOptions {
+  domain: string;
+  apiKey: string;
+  host?: string;
+  timeout?: number;
+}
+
+export interface TemplateConfiguration {
+  engine: TemplateEngineType;
+  directory: string;
+  partials?: Record<string, string>;
+  options?: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    helpers?: Record<string, (...args: any[]) => any>;
+    [key: string]: unknown;
   };
 }
 
+// Legacy interfaces for backward compatibility
 export interface MailerConfig {
   transport: TransportType;
   host?: string;
@@ -23,9 +60,7 @@ export interface MailerConfig {
     user: string;
     pass: string;
   };
-  // Transport-specific options. For 'ses' transport, this should be SesMailerOptions.
-  options?: SesMailerOptions | MailgunMailerOptions | Record<string, any>;
-  // Failover/Round-robin configuration
+  options?: SesMailerOptions | MailgunMailerOptions | Record<string, unknown>;
   mailers?: string[];
   retryAfter?: number;
 }
@@ -33,14 +68,12 @@ export interface MailerConfig {
 export interface MailgunMailerOptions {
   apiKey: string;
   domain: string;
-  // Add any other Mailgun specific options here
 }
 
 export interface SesMailerOptions {
   accessKeyId: string;
   secretAccessKey: string;
   region: string;
-  // Add other SES-specific options as needed, e.g., sessionToken, httpOptions, etc.
 }
 
 export interface Attachment {
@@ -61,18 +94,18 @@ export interface Address {
 export interface Content {
   subject?: string;
   from?: Address;
-  to?: Address | Address[];
-  cc?: Address | Address[];
-  bcc?: Address | Address[];
-  replyTo?: Address | Address[];
+  to?: string | Address | Array<string | Address>;
+  cc?: string | Address | Array<string | Address>;
+  bcc?: string | Address | Array<string | Address>;
+  replyTo?: string | Address | Array<string | Address>;
   html?: string;
   text?: string;
   template?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   attachments?: Attachment[];
   headers?: Record<string, string>;
   tags?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -85,13 +118,13 @@ export interface TemplateEngine {
    * @param context The data to be used in the template.
    * @returns A promise that resolves to the rendered string.
    */
-  render(template: string, context: Record<string, any>): Promise<string>;
+  render(template: string, context: Record<string, unknown>): Promise<string>;
   /**
    * Compiles a template source into a reusable function.
    * @param source The template source string.
    * @returns A promise that resolves to a function that can render the template with a given context.
    */
-  compile(source: string): Promise<(context: Record<string, any>) => string>;
+  compile(source: string): Promise<(context: Record<string, unknown>) => string>;
 }
 
 /**
@@ -103,7 +136,7 @@ export interface MailTransport {
    * @param content The email content to be sent.
    * @returns A promise that resolves to the transport's response.
    */
-  send(content: Content): Promise<any>;
+  send(content: Content): Promise<unknown>;
   /**
    * Verifies the transport configuration.
    * @returns A promise that resolves to true if the transport is valid, false otherwise.
@@ -114,4 +147,46 @@ export interface MailTransport {
    * @returns A promise that resolves when the connection is closed.
    */
   close?(): Promise<void>;
+}
+
+/**
+ * Mailable envelope configuration interface
+ */
+export interface MailableEnvelope {
+  subject?: string;
+  tags?: string[];
+  metadata?: Record<string, unknown>;
+  using?: Array<(message: unknown) => void>;
+}
+
+/**
+ * Mailable content configuration interface
+ */
+export interface MailableContent {
+  html?: string;
+  text?: string;
+  markdown?: string;
+  template?: string;
+  with?: Record<string, unknown>;
+}
+
+/**
+ * Mailable headers configuration interface
+ */
+export interface MailableHeaders {
+  messageId?: string;
+  references?: string[];
+  text?: Record<string, string>;
+}
+
+/**
+ * Mailable attachment configuration interface
+ */
+export interface MailableAttachment {
+  path?: string;
+  storage?: string;
+  data?: () => string | Buffer;
+  filename?: string;
+  as?: string;
+  mime?: string;
 }

@@ -6,12 +6,8 @@ import { TemplateEngineFactory } from './services/template.service';
 
 import { MailConfiguration } from './interfaces/mail.interface';
 
-// Module options interface
-export interface MailModuleOptions {
-  config?: MailConfiguration;
-  useFactory?: (...args: any[]) => MailConfiguration | Promise<MailConfiguration>;
-  inject?: any[];
-  imports?: any[];
+// Module options interface - Now directly takes MailConfiguration
+export interface MailModuleOptions extends MailConfiguration {
   providers?: Provider[];
   exports?: any[];
 }
@@ -34,10 +30,11 @@ export const MAIL_MODULE_OPTIONS = 'MAIL_MODULE_OPTIONS';
 
 @Module({})
 export class MailModule {
-  static forRoot(options?: MailModuleOptions): DynamicModule {
+  static forRoot(config: MailModuleOptions): DynamicModule {
+    const { providers, exports, ...mailConfig } = config;
     const configProvider: Provider = {
       provide: MailConfigService,
-      useFactory: () => new MailConfigService(options?.config),
+      useFactory: () => new MailConfigService(mailConfig),
     };
 
     return {
@@ -46,17 +43,15 @@ export class MailModule {
         configProvider,
         MailTransportFactory,
         TemplateEngineFactory,
-
         MailService,
-        ...(options?.providers || []),
+        ...(providers || []),
       ],
       exports: [
         MailService,
         MailConfigService,
         MailTransportFactory,
         TemplateEngineFactory,
-
-        ...(options?.exports || []),
+        ...(exports || []),
       ],
       global: true,
     };
@@ -139,45 +134,5 @@ export class MailModule {
     }
 
     throw new Error('Invalid configuration. Must provide useFactory, useClass, or useExisting');
-  }
-}
-
-// Feature modules for different providers
-@Module({})
-export class MailgunModule {
-  static forRoot(config: { apiKey: string; domain: string; baseUrl?: string }): DynamicModule {
-    const configProvider: Provider = {
-      provide: 'MAILGUN_CONFIG',
-      useValue: config,
-    };
-
-    return {
-      module: MailgunModule,
-      providers: [configProvider],
-      exports: [configProvider],
-    };
-  }
-}
-
-
-
-@Module({})
-export class SESModule {
-  static forRoot(config: {
-    accessKeyId: string;
-    secretAccessKey: string;
-    region: string;
-    sessionToken?: string;
-  }): DynamicModule {
-    const configProvider: Provider = {
-      provide: 'SES_CONFIG',
-      useValue: config,
-    };
-
-    return {
-      module: SESModule,
-      providers: [configProvider],
-      exports: [configProvider],
-    };
   }
 }

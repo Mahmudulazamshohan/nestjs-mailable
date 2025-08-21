@@ -1,6 +1,6 @@
 <div align="center">
   <h1>nestjs-mailable</h1>
-  <p>A comprehensive NestJS mail package inspired by mail functionality with design patterns</p>
+  <p>A comprehensive NestJS mail package with fluent API, advanced mailable classes, and multiple transport support</p>
 </div>
 
 <div align="center">
@@ -29,26 +29,28 @@ yarn add nestjs-mailable nodemailer handlebars ejs pug mjml
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { MailModule } from 'nestjs-mailable';
+import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
 
 @Module({
   imports: [
     MailModule.forRoot({
-      config: {
-        default: {
-          transport: 'smtp',
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
-          auth: {
-            user: 'your-email@gmail.com',
-            pass: 'your-password',
-          },
+      transport: {
+        type: TransportType.SMTP,
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'your-email@gmail.com',
+          pass: 'your-password',
         },
-        templates: {
-          engine: 'handlebars',
-          directory: './templates',
-        },
+      },
+      from: { 
+        address: 'noreply@yourapp.com', 
+        name: 'Your App' 
+      },
+      templates: {
+        engine: TEMPLATE_ENGINE.HANDLEBARS,
+        directory: './templates',
       },
     }),
   ],
@@ -67,106 +69,171 @@ export class UserService {
   constructor(private mailService: MailService) {}
 
   async sendWelcomeEmail(user: { name: string; email: string }) {
+    // Clean, fluent API - template engine auto-detected from configuration
     await this.mailService
       .to(user.email)
-      .subject('Welcome to our platform!')
-      .template('welcome', { name: user.name })
-      .send();
+      .cc('support@company.com')
+      .send({
+        subject: 'Welcome to our platform!',
+        template: 'welcome', // Extension auto-detected (.hbs, .ejs, .pug)
+        context: { name: user.name }
+      });
   }
 }
 ```
 
-### Using Mailable Classes
+### Advanced Mailable Classes
+
+Create advanced, reusable email classes with envelope, content, attachments, and headers:
 
 ```typescript
-import { Mailable } from 'nestjs-mailable';
+import { 
+  MailableClass as Mailable, 
+  AttachmentBuilder, 
+  MailableEnvelope,
+  MailableContent,
+  MailableHeaders,
+  MailableAttachment 
+} from 'nestjs-mailable';
+
+export class OrderShippedAdvanced extends Mailable {
+  constructor(public order: Order) {
+    super();
+  }
+
+  /**
+   * Define the message envelope: subject, tags, metadata
+   */
+  envelope(): MailableEnvelope {
+    return {
+      subject: 'Your Order Has Shipped!',
+      tags: ['shipment'],
+      metadata: {
+        order_id: this.order.id,
+      },
+      using: [
+        (message: any) => {
+          // Add low-level customizations
+          message.headers['X-Mailer'] = 'NestJS-Mailable/1.x';
+        },
+      ],
+    };
+  }
+
+  /**
+   * Define the content: template and data
+   */
+  content(): MailableContent {
+    return {
+      template: 'mail/orders/shipped',
+      with: {
+        orderName: this.order.name,
+        orderPrice: this.order.price,
+      },
+    };
+  }
+
+  /**
+   * Attach files: file path, storage, and in-memory data
+   */
+  attachments(): MailableAttachment[] {
+    return [
+      AttachmentBuilder.fromPath(`./invoices/${this.order.invoice_number}.pdf`)
+        .as(`Invoice-${this.order.invoice_number}.pdf`)
+        .withMime('application/pdf')
+        .build(),
+
+      AttachmentBuilder.fromStorage('reports/shipment-details.txt').build(),
+
+      AttachmentBuilder.fromData(() => this.generateReportPdf(), 'Report.pdf')
+        .withMime('application/pdf')
+        .build(),
+    ];
+  }
+
+  /**
+   * Add custom headers: Message-ID, references, etc.
+   */
+  headers(): MailableHeaders {
+    return {
+      messageId: `<order.${this.order.id}@yourapp.com>`,
+      references: ['<order-confirmation@yourapp.com>'],
+      text: {
+        'X-Custom-Order-Header': 'OrderShippedAdvanced',
+      },
+    };
+  }
+
+  protected generateReportPdf(): string {
+    return '%PDF-1.4... (binary data)';
+  }
+}
+```
+
+**Send with chaining:**
+
+```typescript
+await this.mailService
+  .to(order.customer_email)
+  .cc('manager@yourapp.com')
+  .bcc('audit@yourapp.com')
+  .send(new OrderShippedAdvanced(order));
+```
+
+### Legacy Mailable Classes
+
+```typescript
+import { Mailable, Content } from 'nestjs-mailable';
 
 export class WelcomeMail extends Mailable {
   constructor(private user: { name: string; email: string }) {
     super();
   }
 
-  protected build() {
-    return this
-      .to(this.user.email)
-      .subject('Welcome to our application!')
-      .view('welcome', { name: this.user.name });
+  async build(): Promise<Content> {
+    return {
+      subject: 'Welcome to our application!',
+      template: 'welcome',
+      context: { name: this.user.name }
+    };
   }
 }
 
 // Send the mailable
 const welcomeMail = new WelcomeMail(user);
-await this.mailService.send(welcomeMail);
+await this.mailService.to(user.email).send(welcomeMail);
 ```
 
 ## 📚 Comprehensive Examples
 
-### 1. Advanced Email Composition
+### 1. Multiple Transport Configuration
 
 ```typescript
-import { Injectable } from '@nestjs/common';
-import { MailService } from 'nestjs-mailable';
+import { Module } from '@nestjs/common';
+import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
 
-@Injectable()
-export class OrderService {
-  constructor(private mailService: MailService) {}
-
-  async sendOrderConfirmation(order: any) {
-    await this.mailService
-      .to({ address: order.customer.email, name: order.customer.name })
-      .cc('orders@company.com')
-      .bcc('analytics@company.com')
-      .subject(`Order Confirmation #${order.number}`)
-      .template('order-confirmation', {
-        order,
-        customerName: order.customer.name,
-        items: order.items,
-        total: order.total,
-      })
-      .attach('/path/to/invoice.pdf')
-      .attachData(order.receipt, 'receipt.pdf', 'application/pdf')
-      .header('X-Order-ID', order.id)
-      .tag('order-confirmation')
-      .metadata({ orderId: order.id, customerId: order.customer.id })
-      .send();
-  }
-}
-```
-
-### 2. Multiple Transport Configuration
-
-```typescript
 @Module({
   imports: [
     MailModule.forRoot({
-      config: {
-        // Primary transport (SMTP)
-        default: {
-          transport: 'smtp',
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
+      // SMTP Transport
+      transport: {
+        type: TransportType.SMTP,
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
         },
-        // Amazon SES for transactional emails
-        transactional: {
-          transport: 'ses',
-          region: 'us-east-1',
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        },
-        // Mailgun for marketing emails
-        marketing: {
-          transport: 'mailgun',
-          domain: 'mg.yourdomain.com',
-          apiKey: process.env.MAILGUN_API_KEY,
-        },
-        // Global email settings
-        from: { address: 'noreply@yourapp.com', name: 'Your App' },
-        replyTo: 'support@yourapp.com',
+      },
+      from: { 
+        address: 'noreply@yourapp.com', 
+        name: 'Your App' 
+      },
+      replyTo: 'support@yourapp.com',
+      templates: {
+        engine: TEMPLATE_ENGINE.HANDLEBARS,
+        directory: './templates',
       },
     }),
   ],
@@ -174,171 +241,73 @@ export class OrderService {
 export class AppModule {}
 ```
 
-### 3. Template Engine Examples
-
-#### Handlebars Templates
-
-**templates/welcome.hbs**
-```handlebars
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Welcome {{userName}}!</title>
-    <style>
-        .button { background: #007bff; color: white; padding: 10px 20px; }
-    </style>
-</head>
-<body>
-    <h1>Welcome {{userName}}!</h1>
-    <p>Thank you for joining {{appName}}.</p>
-    
-    {{#if verificationUrl}}
-    <a href="{{verificationUrl}}" class="button">Verify Email</a>
-    {{/if}}
-    
-    <ul>
-    {{#each features}}
-        <li>{{this}}</li>
-    {{/each}}
-    </ul>
-</body>
-</html>
-```
-
-#### MJML Templates
-
-**templates/newsletter.mjml**
-```xml
-<mjml>
-  <mj-head>
-    <mj-title>Weekly Newsletter</mj-title>
-  </mj-head>
-  <mj-body background-color="#f4f4f4">
-    <mj-section background-color="white">
-      <mj-column>
-        <mj-text font-size="24px" font-weight="bold">
-          Hello {{subscriberName}}!
-        </mj-text>
-        <mj-text>
-          Here are this week's highlights:
-        </mj-text>
-        {{#each articles}}
-        <mj-text>
-          <h3><a href="{{url}}">{{title}}</a></h3>
-          <p>{{excerpt}}</p>
-        </mj-text>
-        {{/each}}
-        <mj-button href="{{unsubscribeUrl}}">
-          Unsubscribe
-        </mj-button>
-      </mj-column>
-    </mj-section>
-  </mj-body>
-</mjml>
-```
-
-### 4. Advanced Mailable Classes
+### 2. Amazon SES Configuration
 
 ```typescript
-import { Mailable } from 'nestjs-mailable';
-
-export class OrderShippedMail extends Mailable {
-  constructor(
-    private order: Order,
-    private customer: Customer,
-    private trackingNumber: string
-  ) {
-    super();
-  }
-
-  protected build() {
-    return this
-      .to({ address: this.customer.email, name: this.customer.name })
-      .cc(this.customer.isVip ? 'vip-support@company.com' : null)
-      .subject(`Your order #${this.order.number} has shipped!`)
-      .view('emails.orders.shipped', {
-        customerName: this.customer.name,
-        orderNumber: this.order.number,
-        trackingNumber: this.trackingNumber,
-        items: this.order.items,
-        estimatedDelivery: this.calculateDeliveryDate(),
-        isVip: this.customer.isVip,
-      })
-      .attach(this.generateShippingLabel())
-      .header('X-Order-Type', this.order.type)
-      .tag('order-shipped')
-      .metadata({
-        orderId: this.order.id,
-        customerId: this.customer.id,
-        trackingNumber: this.trackingNumber,
-      });
-  }
-
-  private calculateDeliveryDate(): Date {
-    const businessDays = this.customer.isVip ? 1 : 3;
-    // Calculate delivery date logic...
-    return new Date();
-  }
-
-  private generateShippingLabel(): string {
-    // Generate shipping label PDF...
-    return '/tmp/shipping-label.pdf';
-  }
-}
+@Module({
+  imports: [
+    MailModule.forRoot({
+      transport: {
+        type: TransportType.SES,
+        region: 'us-east-1',
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        },
+      },
+      from: { address: 'noreply@yourapp.com', name: 'Your App' },
+      templates: {
+        engine: TEMPLATE_ENGINE.HANDLEBARS,
+        directory: './templates',
+      },
+    }),
+  ],
+})
+export class AppModule {}
 ```
 
-### 5. Builder Pattern Usage
+### 3. Environment-Based Configuration with ConfigService
 
 ```typescript
-import { MailableBuilder } from 'nestjs-mailable';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
 
-@Injectable()
-export class NotificationService {
-  constructor(private mailService: MailService) {}
-
-  async sendCustomNotification(user: User, notification: Notification) {
-    const baseEmail = MailableBuilder.create()
-      .from('notifications@yourapp.com')
-      .tag('notification')
-      .header('X-Notification-Type', notification.type);
-
-    // Clone and customize based on notification type
-    let email = baseEmail.clone();
-
-    switch (notification.type) {
-      case 'urgent':
-        email = email
-          .subject(`🚨 URGENT: ${notification.title}`)
-          .template('notifications.urgent', { 
-            user, 
-            notification,
-            urgencyLevel: 'high' 
-          })
-          .header('X-Priority', '1');
-        break;
-
-      case 'info':
-        email = email
-          .subject(notification.title)
-          .template('notifications.info', { user, notification });
-        break;
-
-      case 'marketing':
-        email = email
-          .subject(notification.title)
-          .template('notifications.marketing', { user, notification })
-          .header('List-Unsubscribe', `<mailto:unsubscribe@yourapp.com?subject=unsubscribe-${user.id}>`);
-        break;
-    }
-
-    await this.mailService.send(
-      email.to(user.email).build()
-    );
-  }
-}
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    MailModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          type: configService.get('MAIL_TRANSPORT') === 'ses' 
+            ? TransportType.SES 
+            : TransportType.SMTP,
+          host: configService.get('MAIL_HOST'),
+          port: configService.get('MAIL_PORT', 587),
+          secure: configService.get('MAIL_SECURE', false),
+          auth: {
+            user: configService.get('MAIL_USER'),
+            pass: configService.get('MAIL_PASS'),
+          },
+        },
+        from: {
+          address: configService.get('MAIL_FROM_ADDRESS'),
+          name: configService.get('MAIL_FROM_NAME'),
+        },
+        templates: {
+          engine: TEMPLATE_ENGINE.HANDLEBARS,
+          directory: './templates',
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+})
+export class AppModule {}
 ```
 
-### 6. Testing with MailFake
+### 4. Testing with MailFake
 
 ```typescript
 import { Test } from '@nestjs/testing';
@@ -354,7 +323,7 @@ describe('UserService', () => {
         UserService,
         {
           provide: MailService,
-          useClass: MailFake,
+          useValue: new MailFake(new MailService({} as any)),
         },
       ],
     }).compile();
@@ -368,62 +337,47 @@ describe('UserService', () => {
     
     await userService.registerUser(user);
 
-    // Assert email was sent
-    mailFake.assertSent(WelcomeMail, (mail) => {
-      return mail.hasTo(user.email) && 
-             mail.hasSubject('Welcome to our platform!');
-    });
-
-    // Check sent count
+    // Check that email was sent
     expect(mailFake.getSentCount()).toBe(1);
 
-    // Get sent emails
+    // Get sent emails and verify content
     const sentEmails = mailFake.getSent();
+    expect(sentEmails[0].subject).toBe('Welcome to our platform!');
     expect(sentEmails[0].context.name).toBe(user.name);
   });
 });
 ```
 
-
-### 8. Custom Template Helpers
+### 5. Template Engine Configuration
 
 ```typescript
 @Module({
   imports: [
     MailModule.forRoot({
-      config: {
-        templates: {
-          engine: 'handlebars',
-          directory: './templates',
-          options: {
-            helpers: {
-              // Currency formatting
-              currency: (amount: number, currency = 'USD') => {
-                return new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: currency
-                }).format(amount);
-              },
-              
-              // Date formatting
-              formatDate: (date: Date, format = 'short') => {
-                return new Intl.DateTimeFormat('en-US', {
-                  dateStyle: format as any
-                }).format(new Date(date));
-              },
-              
-              // Conditional helper
-              ifEquals: function(arg1: any, arg2: any, options: any) {
-                return arg1 === arg2 ? options.fn(this) : options.inverse(this);
-              },
-              
-              // String manipulation
-              truncate: (str: string, length: number) => {
-                return str.length > length ? str.substring(0, length) + '...' : str;
-              },
-            },
-            partials: './templates/partials',
+      transport: {
+        type: TransportType.SMTP,
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      },
+      templates: {
+        engine: TEMPLATE_ENGINE.HANDLEBARS,
+        directory: './templates',
+        options: {
+          helpers: {
+            // Custom helpers
+            currency: (amount: number) => `$${amount.toFixed(2)}`,
+            formatDate: (date: Date) => date.toLocaleDateString(),
+            uppercase: (str: string) => str.toUpperCase(),
           },
+        },
+        partials: {
+          header: './templates/partials/header',
+          footer: './templates/partials/footer',
         },
       },
     }),
@@ -432,54 +386,17 @@ describe('UserService', () => {
 export class AppModule {}
 ```
 
-### 9. Environment-Based Configuration
-
-```typescript
-import { ConfigModule, ConfigService } from '@nestjs/config';
-
-@Module({
-  imports: [
-    ConfigModule.forRoot(),
-    MailModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        config: {
-          default: {
-            transport: configService.get('MAIL_TRANSPORT', 'smtp'),
-            host: configService.get('MAIL_HOST'),
-            port: configService.get('MAIL_PORT', 587),
-            secure: configService.get('MAIL_SECURE', false),
-            auth: {
-              user: configService.get('MAIL_USER'),
-              pass: configService.get('MAIL_PASS'),
-            },
-          },
-          from: {
-            address: configService.get('MAIL_FROM_ADDRESS'),
-            name: configService.get('MAIL_FROM_NAME'),
-          },
-          templates: {
-            engine: 'handlebars',
-            directory: './templates',
-          },
-        },
-      }),
-      inject: [ConfigService],
-    }),
-  ],
-})
-export class AppModule {}
-```
-
 ## Features
 
-✨ **API** - Familiar and intuitive interface  
-🏗️ **Design Patterns** - Factory, Builder, Strategy patterns  
-📧 **Multiple Transports** - SMTP, SES, Mailgun support  
-🎨 **Template Engines** - Handlebars, EJS, Pug, MJML  
-🧪 **Testing Utilities** - Comprehensive testing helpers  
-🔄 **Failover Support** - Multiple transport strategies  
-🎯 **Type Safety** - Full TypeScript support  
+✨ **Advanced Mailable Classes** - Advanced mailable classes with envelope, content, attachments, and headers methods  
+🔗 **Fluent API** - Clean, intuitive interface with method chaining  
+🏗️ **Design Patterns** - Factory, Builder, Strategy patterns for maintainable code  
+📧 **Multiple Transports** - SMTP, Amazon SES, Mailgun support  
+🎨 **Template Engines** - Handlebars, EJS, Pug support with auto-detection  
+📎 **Attachment Builder** - Fluent attachment creation from file paths and in-memory data  
+🧪 **Testing Utilities** - MailFake class for testing email sending  
+⚙️ **Easy Configuration** - Simple module configuration with forRoot/forRootAsync  
+🎯 **Type Safety** - Full TypeScript support with comprehensive interfaces  
 
 ## Supported Transports
 

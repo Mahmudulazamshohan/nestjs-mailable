@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Shipped</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #ffa502);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .order-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .order-item {
+            padding: 10px;
+            background: #f0f4f8;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <h1>Your Order Has Shipped! 📦</h1>
+            <p>Order #<%= orderId %> is on its way</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello <%= customerEmail %>,</h2>
+            
+            <p>Great news! Your order <strong><%= orderName %></strong> has been shipped and is on its way to you.</p>
+            
+            <div class="order-grid">
+                <div class="order-item"><strong>Order ID:</strong> <%= orderId %></div>
+                <div class="order-item"><strong>Item:</strong> <%= orderName %></div>
+                <div class="order-item"><strong>Price:</strong> $<%= orderPrice %></div>
+                <div class="order-item"><strong>Invoice:</strong> <%= invoiceNumber %></div>
+            </div>
+            
+            <div class="features">
+                <div class="feature">🚚 Fast Shipping</div>
+                <div class="feature">📦 Secure Packaging</div>
+                <div class="feature">📍 Real-time Tracking</div>
+                <div class="feature">📞 24/7 Support</div>
+            </div>
+            
+            <p>You can track your shipment using the tracking number provided by our shipping partner.</p>
+            
+            <center>
+                <a href="https://yourapp.com/orders/<%= orderId %>/track" class="btn">Track Your Order</a>
+            </center>
+            
+            <p>If you have any questions, feel free to contact our support team.</p>
+        </div>
+    </div>
+</body>
+</html>

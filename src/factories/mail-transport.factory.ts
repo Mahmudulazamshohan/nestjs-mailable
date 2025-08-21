@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { MailTransport, MailerConfig, MailgunMailerOptions } from '../interfaces/mail.interface';
+import { MailTransport, MailerConfig, TransportConfiguration } from '../interfaces/mail.interface';
 import { SmtpTransport } from '../transports/smtp.transport';
-
 import { SesTransport } from '../transports/ses.transport';
 import { MailgunTransport } from '../transports/mailgun.transport';
 import { TransportType } from '../types/transport.type';
@@ -11,7 +10,40 @@ import { TransportType } from '../types/transport.type';
 export class MailTransportFactory {
   private customTransports = new Map<string, () => MailTransport>();
 
-  createTransport(config: MailerConfig): MailTransport {
+  createTransport(config: TransportConfiguration): MailTransport {
+    switch (config.type) {
+      case TransportType.SMTP:
+        return new SmtpTransport({
+          host: config.host,
+          port: config.port,
+          secure: config.secure,
+          ignoreTLS: config.ignoreTLS,
+          auth: config.auth,
+        });
+      case TransportType.SES:
+        if (!config.region || !config.credentials) {
+          throw new Error('SES transport requires region and credentials configuration');
+        }
+        return new SesTransport({
+          endpoint: config.endpoint,
+          region: config.region,
+          credentials: config.credentials,
+        });
+      case TransportType.MAILGUN:
+        if (!config.options) {
+          throw new Error('Mailgun transport requires options configuration');
+        }
+        return new MailgunTransport({
+          transport: 'mailgun',
+          options: config.options,
+        } as MailerConfig);
+      default:
+        throw new Error(`Unsupported transport type: ${config.type}`);
+    }
+  }
+
+  // Legacy method for backward compatibility
+  createTransportLegacy(config: MailerConfig): MailTransport {
     switch (config.transport) {
       case TransportType.SMTP:
         return new SmtpTransport({
@@ -22,14 +54,11 @@ export class MailTransportFactory {
           ...config.options,
         });
       case TransportType.SES:
-        // SES transport support
         if (!config.options) {
           throw new Error('SES transport requires options configuration');
         }
-        // Assuming SesTransport is imported and available
-        return new SesTransport(config.options);
+        return new SesTransport(config.options as Record<string, unknown>);
       case TransportType.MAILGUN:
-        // Mailgun transport support
         if (!config.options) {
           throw new Error('Mailgun transport requires options configuration');
         }
@@ -45,32 +74,6 @@ export class MailTransportFactory {
 
   // Transport Strategy Pattern
   getAvailableTransports(): TransportType[] {
-    return [TransportType.SMTP, TransportType.SMTP, TransportType.MAILGUN];
-  }
-
-  // Builder method for complex transport configurations
-  buildTransportChain(): TransportChainBuilder {
-    return new TransportChainBuilder(this);
-  }
-}
-
-export class TransportChainBuilder {
-  private transports: (() => MailTransport)[] = [];
-
-  constructor(private factory: MailTransportFactory) {}
-
-  addSmtp(config: any): TransportChainBuilder {
-    this.transports.push(() => new SmtpTransport(config));
-    return this;
-  }
-
-  addSes(config: any): TransportChainBuilder {
-    this.transports.push(() => new SesTransport(config));
-    return this;
-  }
-
-  addMailgun(config: MailgunMailerOptions): TransportChainBuilder {
-    this.transports.push(() => new MailgunTransport({ transport: 'mailgun', options: config }));
-    return this;
+    return [TransportType.SMTP, TransportType.SES, TransportType.MAILGUN];
   }
 }

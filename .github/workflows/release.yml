@@ -6,16 +6,11 @@ on:
       - main
 
 jobs:
-  release-and-deploy:
+  release:
     name: Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      # pages: write
-      # id-token: write
-    # environment:
-    #   name: github-pages
-    #   url: https://nestjs-mailable.github.io
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,19 +37,6 @@ jobs:
         id: semantic
         run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
-          NPM_TOKEN: ${{ secrets.NPMTOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPMTOKEN }}
-      # - name: Build documentation
-      #   run: yarn run docs:build
-      # - name: Setup Pages
-      #   uses: actions/configure-pages@v4
-      #   with:
-      #     enablement: true
-      # - name: Upload artifact
-      #   uses: actions/upload-pages-artifact@v3
-      #   with:
-      #     path: ./docs/build
-      # - name: Deploy to GitHub Pages
-      #   id: deployment
-      #   uses: actions/deploy-pages@v4
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
