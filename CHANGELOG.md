@@ -1,3 +1,11 @@
+# [1.2.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.1.2...v1.2.0) (2025-08-23)
+
+
+### Features
+
+* add new transportation code ([3674a3b](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/3674a3bc99b739887454201845bb3cc8ed5efd3a))
+* change templating system & add mailable. fix email sending issues [skip ci] ([da7f725](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/da7f725bd56923c7bd5b905fdba70bff3057ac55))
+
 ## [1.1.2](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.1.1...v1.1.2) (2025-08-17)
 
 
