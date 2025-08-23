@@ -39,20 +39,8 @@ export class MailModule {
 
     return {
       module: MailModule,
-      providers: [
-        configProvider,
-        MailTransportFactory,
-        TemplateEngineFactory,
-        MailService,
-        ...(providers || []),
-      ],
-      exports: [
-        MailService,
-        MailConfigService,
-        MailTransportFactory,
-        TemplateEngineFactory,
-        ...(exports || []),
-      ],
+      providers: [configProvider, MailTransportFactory, TemplateEngineFactory, MailService, ...(providers || [])],
+      exports: [MailService, MailConfigService, MailTransportFactory, TemplateEngineFactory, ...(exports || [])],
       global: true,
     };
   }

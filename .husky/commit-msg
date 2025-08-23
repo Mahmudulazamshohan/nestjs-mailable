@@ -1,6 +1,5 @@
 #!/bin/sh
-# Load nvm if available
-[ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
-# Add common Node.js paths
-export PATH="$PATH:$HOME/.nvm/versions/node/$(nvm current)/bin:$HOME/.yarn/bin:/usr/local/bin"
+. "$(dirname "$0")/_/husky.sh"
+
+# Validate commit message using commitlint
 npx --no-install commitlint --edit "$1"

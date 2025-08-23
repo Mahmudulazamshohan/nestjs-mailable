@@ -39,6 +39,48 @@ export class EmailController {
     }
   }
 
+  @Post('test-helpers')
+  async testHelpers(@Body() body: { email: string }) {
+    try {
+      // Test data with various scenarios
+      const testData = {
+        customerEmail: body.email,
+        orderId: 'ORD-2024-001',
+        orderName: 'Premium JavaScript Course',
+        orderPrice: 149.99,
+        invoiceNumber: 'INV-2024-001',
+        createdAt: new Date(),
+        items: [
+          { name: 'Course Access', price: 99.99 },
+          { name: 'Certificate', price: 49.99 },
+        ],
+        total: 149.99,
+        discount: 10.0,
+        userName: 'john doe',
+        description: 'this is a test description for helper functions',
+      };
+
+      const result = await this.emailService.testTemplateHelpers(body.email, testData);
+
+      return {
+        success: true,
+        message: 'Template helper functions tested successfully',
+        result,
+        testData,
+        etherealInfo: {
+          url: 'https://ethereal.email/',
+          username: process.env.MAIL_USERNAME,
+          password: process.env.MAIL_PASSWORD,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
   @Post('test-all-engines')
   async testAllEngines(@Body() body: { email: string }) {
     const templateEngines = ['handlebars', 'ejs', 'pug'];
@@ -93,8 +135,8 @@ export class EmailController {
       results,
       etherealInfo: {
         url: 'https://ethereal.email/',
-        username: 'trevor24@ethereal.email',
-        password: 'MDf9yY7t9PzCSKCGnW',
+        username: process.env.MAIL_USERNAME,
+        password: process.env.MAIL_PASSWORD,
       },
     };
   }

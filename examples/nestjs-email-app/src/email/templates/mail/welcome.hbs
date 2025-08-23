@@ -1,0 +1,30 @@
+{{> header company="NestJS Mailable" }}
+
+<div class="email-body">
+  <h1>Welcome {{name}}!</h1>
+  
+  <p>Thank you for joining us. We're excited to have you on board!</p>
+  
+  {{#if features}}
+  <div class="features">
+    <h2>What you can do with NestJS Mailable:</h2>
+    <ul>
+      {{#each features}}
+      <li>{{this}}</li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+  
+  <div class="action">
+    <a href="{{actionUrl}}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">
+      Get Started
+    </a>
+  </div>
+  
+  <p>If you have any questions, feel free to reach out to our support team.</p>
+  
+  <p>Best regards,<br>The NestJS Mailable Team</p>
+</div>
+
+{{> footer }}

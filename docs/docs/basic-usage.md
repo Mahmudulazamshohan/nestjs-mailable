@@ -207,18 +207,18 @@ export class UserService {
 }
 ```
 
-### Advanced Mailable (Laravel-style)
+### Advanced Mailable
 
 ```typescript
 import { 
-  Mailable as AdvancedMailable, 
+  Mailable, 
   MailableEnvelope, 
   MailableContent,
   MailableAttachment,
   AttachmentBuilder 
 } from 'nestjs-mailable';
 
-export class OrderConfirmation extends AdvancedMailable {
+export class OrderConfirmation extends Mailable {
   constructor(private order: any) {
     super();
   }
@@ -307,7 +307,7 @@ export class ReportEmail extends Mailable {
 ### Advanced Mailable Attachments
 
 ```typescript
-export class InvoiceEmail extends AdvancedMailable {
+export class InvoiceEmail extends Mailable {
   constructor(private invoice: any) {
     super();
   }
@@ -444,7 +444,7 @@ await this.mailService.send({
 ### 2. Use Mailable Classes for Complex Emails
 ```typescript
 // Good: Organized in classes
-export class OrderConfirmation extends AdvancedMailable {
+export class OrderConfirmation extends Mailable {
   // Logic here
 }
 

@@ -94,35 +94,11 @@ await this.mailService
   });
 ```
 
-### 3. Mailable Classes (Advanced)
-
-Choose between **Legacy Mailables** (simple) or **Advanced Mailables** (Laravel-style):
-
-#### Legacy Mailable (Simple)
+### 3. Mailable Classes
 ```typescript
-import { Mailable } from 'nestjs-mailable';
+import { Mailable, MailableEnvelope, MailableContent } from 'nestjs-mailable';
 
 export class WelcomeMail extends Mailable {
-  constructor(private user: any) {
-    super();
-  }
-
-  build() {
-    return this.subject(`Welcome ${this.user.name}!`)
-      .view('welcome', { user: this.user })
-      .tag('welcome');
-  }
-}
-
-// Usage
-await this.mailService.send(new WelcomeMail(user));
-```
-
-#### Advanced Mailable (Laravel-style)
-```typescript
-import { Mailable as AdvancedMailable, MailableEnvelope, MailableContent } from 'nestjs-mailable';
-
-export class WelcomeMail extends AdvancedMailable {
   constructor(private user: any) {
     super();
   }
@@ -150,7 +126,7 @@ await this.mailService.to(user.email).send(new WelcomeMail(user));
 
 - **Multiple Transports**: SMTP, Amazon SES, Mailgun
 - **Template Engines**: Handlebars, EJS, Pug
-- **Two Mailable Styles**: Simple legacy or advanced Laravel-style  
+- **Advanced Mailable Classes**: Organized and reusable email components  
 - **Fluent API**: Chain methods for complex emails
 - **Testing Support**: Built-in fake mailer for testing
 - **Attachments**: File, data, and storage attachments

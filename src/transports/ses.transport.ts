@@ -1,13 +1,17 @@
 import { MailTransport, Content } from '../interfaces/mail.interface';
 import { Transporter } from 'nodemailer';
 import { SES } from 'aws-sdk';
-import fetch from 'node-fetch';
 
 export class SesTransport implements MailTransport {
   private transporter: Transporter | null = null;
   private ses: SES;
 
   constructor(private options: Record<string, unknown>) {
+    // Validate required options
+    if (!options.region || !options.credentials) {
+      throw new Error('SES transport requires region and credentials configuration');
+    }
+
     // Configure AWS SES
     this.ses = new SES({
       endpoint: options.endpoint as string,

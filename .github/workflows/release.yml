@@ -30,13 +30,13 @@ jobs:
       - name: Type check
         run: tsc --noEmit
       - name: Run tests
-        run: yarn run test:core || true
+        run: yarn run test:core
       - name: Build package
         run: yarn run build:core
       - name: Run semantic-release
         id: semantic
         run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+          NPM_TOKEN: ${{ secrets.NPMTOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPMTOKEN }}

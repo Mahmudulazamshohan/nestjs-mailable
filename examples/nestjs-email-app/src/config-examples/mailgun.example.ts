@@ -8,13 +8,16 @@ import * as path from 'path';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // Example with Mailgun Transport
+    // Example with Mailgun Transport (supports mock server for development)
     MailModule.forRoot({
       transport: {
         type: TransportType.MAILGUN,
         options: {
           domain: process.env.MAILGUN_DOMAIN || 'mg.yourdomain.com',
           apiKey: process.env.MAILGUN_API_KEY || 'your-mailgun-api-key',
+          // For mock server (development/testing)
+          host: process.env.MAILGUN_HOST || undefined, // Use 'localhost:3001' for mock
+          protocol: process.env.MAILGUN_PROTOCOL || undefined, // Use 'http:' for mock
         },
       },
       from: {

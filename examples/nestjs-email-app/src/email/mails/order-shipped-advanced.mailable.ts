@@ -1,5 +1,5 @@
 import {
-  MailableClass as Mailable,
+  Mailable,
   AttachmentBuilder,
   MailableEnvelope,
   MailableContent,

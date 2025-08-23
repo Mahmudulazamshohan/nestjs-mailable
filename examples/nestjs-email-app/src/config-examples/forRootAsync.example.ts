@@ -19,8 +19,8 @@ import * as path from 'path';
           ignoreTLS: configService.get('MAIL_IGNORE_TLS', true),
           secure: configService.get('MAIL_SECURE', false),
           auth: {
-            user: configService.get('MAIL_USERNAME'),
-            pass: configService.get('MAIL_PASSWORD'),
+            user: configService.get('MAIL_USERNAME') || '',
+            pass: configService.get('MAIL_PASSWORD') || '',
           },
         },
         from: {

@@ -9,33 +9,46 @@ export interface MailConfiguration {
   templates?: TemplateConfiguration;
 }
 
-export interface TransportConfiguration {
-  type: TransportType;
-  // SMTP specific options
-  host?: string;
+// Discriminated union types for transport-specific configurations
+export interface SMTPTransportConfiguration {
+  type: typeof TransportType.SMTP;
+  host: string;
   port?: number;
   secure?: boolean;
   ignoreTLS?: boolean;
-  auth?: {
-    user?: string;
-    pass?: string;
+  auth: {
+    user: string;
+    pass: string;
   };
-  // SES specific options
-  endpoint?: string;
-  region?: string;
-  credentials?: {
+}
+
+export interface SESTransportConfiguration {
+  type: typeof TransportType.SES;
+  region: string;
+  credentials: {
     accessKeyId: string;
     secretAccessKey: string;
     sessionToken?: string;
   };
-  // Mailgun specific options
-  options?: MailgunOptions;
+  endpoint?: string;
 }
+
+export interface MailgunTransportConfiguration {
+  type: typeof TransportType.MAILGUN;
+  options: MailgunOptions;
+}
+
+// Union type that enforces transport-specific required fields
+export type TransportConfiguration =
+  | SMTPTransportConfiguration
+  | SESTransportConfiguration
+  | MailgunTransportConfiguration;
 
 export interface MailgunOptions {
   domain: string;
   apiKey: string;
   host?: string;
+  protocol?: string;
   timeout?: number;
 }
 
@@ -48,32 +61,6 @@ export interface TemplateConfiguration {
     helpers?: Record<string, (...args: any[]) => any>;
     [key: string]: unknown;
   };
-}
-
-// Legacy interfaces for backward compatibility
-export interface MailerConfig {
-  transport: TransportType;
-  host?: string;
-  port?: number;
-  secure?: boolean;
-  auth?: {
-    user: string;
-    pass: string;
-  };
-  options?: SesMailerOptions | MailgunMailerOptions | Record<string, unknown>;
-  mailers?: string[];
-  retryAfter?: number;
-}
-
-export interface MailgunMailerOptions {
-  apiKey: string;
-  domain: string;
-}
-
-export interface SesMailerOptions {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
 }
 
 export interface Attachment {

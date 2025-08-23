@@ -66,10 +66,12 @@ describe('New Configuration System', () => {
     it('should have correct transport configuration', () => {
       const config = configService.getTransportConfig();
       expect(config.type).toBe(TransportType.SMTP);
-      expect(config.host).toBe('localhost');
-      expect(config.port).toBe(1025);
-      expect(config.ignoreTLS).toBe(true);
-      expect(config.secure).toBe(false);
+      if (config.type === TransportType.SMTP) {
+        expect(config.host).toBe('localhost');
+        expect(config.port).toBe(1025);
+        expect(config.ignoreTLS).toBe(true);
+        expect(config.secure).toBe(false);
+      }
     });
 
     it('should have correct from configuration', () => {
@@ -146,12 +148,14 @@ describe('New Configuration System', () => {
     it('should have correct SES transport configuration', () => {
       const config = configService.getTransportConfig();
       expect(config.type).toBe(TransportType.SES);
-      expect(config.endpoint).toBe('http://localhost:4566');
-      expect(config.region).toBe('us-east-1');
-      expect(config.credentials).toEqual({
-        accessKeyId: 'test',
-        secretAccessKey: 'test',
-      });
+      if (config.type === TransportType.SES) {
+        expect(config.endpoint).toBe('http://localhost:4566');
+        expect(config.region).toBe('us-east-1');
+        expect(config.credentials).toEqual({
+          accessKeyId: 'test',
+          secretAccessKey: 'test',
+        });
+      }
     });
 
     it('should have EJS template engine configured', () => {
@@ -201,10 +205,12 @@ describe('New Configuration System', () => {
     it('should have correct Mailgun transport configuration', () => {
       const config = configService.getTransportConfig();
       expect(config.type).toBe(TransportType.MAILGUN);
-      expect(config.options).toEqual({
-        domain: 'mg.test.com',
-        apiKey: 'test-api-key',
-      });
+      if (config.type === TransportType.MAILGUN) {
+        expect(config.options).toEqual({
+          domain: 'mg.test.com',
+          apiKey: 'test-api-key',
+        });
+      }
     });
 
     it('should have Pug template engine configured', () => {

@@ -1,6 +1,6 @@
 <div align="center">
-  <h1>nestjs-mailable</h1>
-  <p>A comprehensive NestJS mail package with fluent API, advanced mailable classes, and multiple transport support</p>
+  <h1>🚀 NestJS Mailable</h1>
+  <p>Advanced mailable classes for NestJS with fluent API, multiple transports, and comprehensive template support</p>
 </div>
 
 <div align="center">
@@ -13,19 +13,70 @@
 
 </div>
 
-## Installation
+## ✨ Features
 
+- 🎯 **Advanced Mailable Classes** - Organized, reusable email components
+- 🔗 **Fluent API** - Clean, chainable interface for sending emails
+- 📧 **Multiple Transports** - SMTP, Amazon SES, Mailgun support
+- 🎨 **Template Engines** - Handlebars, EJS, Pug with auto-detection
+- 📎 **Attachment Builder** - Flexible file attachment handling
+- ⚙️ **Easy Configuration** - Simple setup with TypeScript support
+- 🧪 **Testing Ready** - Built-in testing utilities
+
+## 📦 Installation
+
+### Basic Installation
 ```bash
-npm install nestjs-mailable nodemailer handlebars ejs pug mjml
+npm install nestjs-mailable nodemailer handlebars
 ```
 
+### Choose Your Transport & Template Engine
+
+#### SMTP Transport
 ```bash
-yarn add nestjs-mailable nodemailer handlebars ejs pug mjml
+# With Handlebars (recommended)
+npm install nestjs-mailable nodemailer handlebars
+
+# With EJS
+npm install nestjs-mailable nodemailer ejs
+
+# With Pug
+npm install nestjs-mailable nodemailer pug
 ```
 
-## Quick Start
+#### Amazon SES Transport
+```bash
+# With Handlebars
+npm install nestjs-mailable aws-sdk handlebars
 
-### Module Configuration
+# With EJS
+npm install nestjs-mailable aws-sdk ejs
+
+# With Pug
+npm install nestjs-mailable aws-sdk pug
+```
+
+#### Mailgun Transport
+```bash
+# With Handlebars
+npm install nestjs-mailable mailgun.js handlebars
+
+# With EJS
+npm install nestjs-mailable mailgun.js ejs
+
+# With Pug
+npm install nestjs-mailable mailgun.js pug
+```
+
+### All-in-One Installation
+```bash
+# Install with all transports and template engines
+npm install nestjs-mailable nodemailer aws-sdk mailgun.js handlebars ejs pug
+```
+
+## 🚀 Quick Start
+
+### 1. Module Setup
 
 ```typescript
 import { Module } from '@nestjs/common';
@@ -58,129 +109,29 @@ import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
 export class AppModule {}
 ```
 
-### Basic Email Sending
+### 2. Simple Email Sending
 
 ```typescript
 import { Injectable } from '@nestjs/common';
 import { MailService } from 'nestjs-mailable';
 
 @Injectable()
-export class UserService {
+export class NotificationService {
   constructor(private mailService: MailService) {}
 
   async sendWelcomeEmail(user: { name: string; email: string }) {
-    // Clean, fluent API - template engine auto-detected from configuration
     await this.mailService
       .to(user.email)
-      .cc('support@company.com')
-      .send({
-        subject: 'Welcome to our platform!',
-        template: 'welcome', // Extension auto-detected (.hbs, .ejs, .pug)
-        context: { name: user.name }
-      });
+      .subject('Welcome!')
+      .template('welcome', { name: user.name })
+      .send();
   }
 }
 ```
 
-### Advanced Mailable Classes
+## 📧 Mailable Classes
 
-Create advanced, reusable email classes with envelope, content, attachments, and headers:
-
-```typescript
-import { 
-  MailableClass as Mailable, 
-  AttachmentBuilder, 
-  MailableEnvelope,
-  MailableContent,
-  MailableHeaders,
-  MailableAttachment 
-} from 'nestjs-mailable';
-
-export class OrderShippedAdvanced extends Mailable {
-  constructor(public order: Order) {
-    super();
-  }
-
-  /**
-   * Define the message envelope: subject, tags, metadata
-   */
-  envelope(): MailableEnvelope {
-    return {
-      subject: 'Your Order Has Shipped!',
-      tags: ['shipment'],
-      metadata: {
-        order_id: this.order.id,
-      },
-      using: [
-        (message: any) => {
-          // Add low-level customizations
-          message.headers['X-Mailer'] = 'NestJS-Mailable/1.x';
-        },
-      ],
-    };
-  }
-
-  /**
-   * Define the content: template and data
-   */
-  content(): MailableContent {
-    return {
-      template: 'mail/orders/shipped',
-      with: {
-        orderName: this.order.name,
-        orderPrice: this.order.price,
-      },
-    };
-  }
-
-  /**
-   * Attach files: file path, storage, and in-memory data
-   */
-  attachments(): MailableAttachment[] {
-    return [
-      AttachmentBuilder.fromPath(`./invoices/${this.order.invoice_number}.pdf`)
-        .as(`Invoice-${this.order.invoice_number}.pdf`)
-        .withMime('application/pdf')
-        .build(),
-
-      AttachmentBuilder.fromStorage('reports/shipment-details.txt').build(),
-
-      AttachmentBuilder.fromData(() => this.generateReportPdf(), 'Report.pdf')
-        .withMime('application/pdf')
-        .build(),
-    ];
-  }
-
-  /**
-   * Add custom headers: Message-ID, references, etc.
-   */
-  headers(): MailableHeaders {
-    return {
-      messageId: `<order.${this.order.id}@yourapp.com>`,
-      references: ['<order-confirmation@yourapp.com>'],
-      text: {
-        'X-Custom-Order-Header': 'OrderShippedAdvanced',
-      },
-    };
-  }
-
-  protected generateReportPdf(): string {
-    return '%PDF-1.4... (binary data)';
-  }
-}
-```
-
-**Send with chaining:**
-
-```typescript
-await this.mailService
-  .to(order.customer_email)
-  .cc('manager@yourapp.com')
-  .bcc('audit@yourapp.com')
-  .send(new OrderShippedAdvanced(order));
-```
-
-### Legacy Mailable Classes
+### Simple Mailable
 
 ```typescript
 import { Mailable, Content } from 'nestjs-mailable';
@@ -192,108 +143,96 @@ export class WelcomeMail extends Mailable {
 
   async build(): Promise<Content> {
     return {
-      subject: 'Welcome to our application!',
+      subject: `Welcome ${this.user.name}!`,
       template: 'welcome',
       context: { name: this.user.name }
     };
   }
 }
 
-// Send the mailable
-const welcomeMail = new WelcomeMail(user);
-await this.mailService.to(user.email).send(welcomeMail);
+// Usage
+await this.mailService
+  .to(user.email)
+  .send(new WelcomeMail(user));
 ```
 
-## 📚 Comprehensive Examples
-
-### 1. Multiple Transport Configuration
+### Advanced Mailable
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
+import { 
+  MailableClass as Mailable, 
+  AttachmentBuilder,
+  MailableEnvelope,
+  MailableContent,
+  MailableAttachment 
+} from 'nestjs-mailable';
 
-@Module({
-  imports: [
-    MailModule.forRoot({
-      // SMTP Transport
-      transport: {
-        type: TransportType.SMTP,
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      },
-      from: { 
-        address: 'noreply@yourapp.com', 
-        name: 'Your App' 
-      },
-      replyTo: 'support@yourapp.com',
-      templates: {
-        engine: TEMPLATE_ENGINE.HANDLEBARS,
-        directory: './templates',
-      },
-    }),
-  ],
-})
-export class AppModule {}
+export class OrderShippedMail extends Mailable {
+  constructor(private order: Order) {
+    super();
+  }
+
+  envelope(): MailableEnvelope {
+    return {
+      subject: `Order #${this.order.id} has shipped!`,
+      tags: ['order', 'shipment'],
+      metadata: { orderId: this.order.id }
+    };
+  }
+
+  content(): MailableContent {
+    return {
+      template: 'orders/shipped',
+      with: {
+        customerName: this.order.customerName,
+        orderNumber: this.order.id,
+        trackingUrl: this.order.trackingUrl
+      }
+    };
+  }
+
+  attachments(): MailableAttachment[] {
+    return [
+      AttachmentBuilder
+        .fromPath('./invoices/invoice.pdf')
+        .as('Invoice.pdf')
+        .build()
+    ];
+  }
+}
+
+// Usage
+await this.mailService
+  .to(order.customerEmail)
+  .cc('sales@company.com')
+  .send(new OrderShippedMail(order));
 ```
 
-### 2. Amazon SES Configuration
+## 🔧 Configuration Examples
+
+### Environment-based Configuration
 
 ```typescript
-@Module({
-  imports: [
-    MailModule.forRoot({
-      transport: {
-        type: TransportType.SES,
-        region: 'us-east-1',
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        },
-      },
-      from: { address: 'noreply@yourapp.com', name: 'Your App' },
-      templates: {
-        engine: TEMPLATE_ENGINE.HANDLEBARS,
-        directory: './templates',
-      },
-    }),
-  ],
-})
-export class AppModule {}
-```
-
-### 3. Environment-Based Configuration with ConfigService
-
-```typescript
-import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     MailModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         transport: {
-          type: configService.get('MAIL_TRANSPORT') === 'ses' 
-            ? TransportType.SES 
-            : TransportType.SMTP,
-          host: configService.get('MAIL_HOST'),
-          port: configService.get('MAIL_PORT', 587),
-          secure: configService.get('MAIL_SECURE', false),
+          type: TransportType.SMTP,
+          host: config.get('MAIL_HOST'),
+          port: config.get('MAIL_PORT', 587),
           auth: {
-            user: configService.get('MAIL_USER'),
-            pass: configService.get('MAIL_PASS'),
+            user: config.get('MAIL_USER'),
+            pass: config.get('MAIL_PASS'),
           },
         },
         from: {
-          address: configService.get('MAIL_FROM_ADDRESS'),
-          name: configService.get('MAIL_FROM_NAME'),
+          address: config.get('MAIL_FROM_ADDRESS'),
+          name: config.get('MAIL_FROM_NAME'),
         },
         templates: {
           engine: TEMPLATE_ENGINE.HANDLEBARS,
@@ -307,137 +246,154 @@ import { MailModule, TransportType, TEMPLATE_ENGINE } from 'nestjs-mailable';
 export class AppModule {}
 ```
 
-### 4. Testing with MailFake
+### Amazon SES Configuration
 
 ```typescript
-import { Test } from '@nestjs/testing';
-import { MailService, MailFake } from 'nestjs-mailable';
-
-describe('UserService', () => {
-  let userService: UserService;
-  let mailFake: MailFake;
-
-  beforeEach(async () => {
-    const module = await Test.createTestingModule({
-      providers: [
-        UserService,
-        {
-          provide: MailService,
-          useValue: new MailFake(new MailService({} as any)),
-        },
-      ],
-    }).compile();
-
-    userService = module.get<UserService>(UserService);
-    mailFake = module.get<MailService>(MailService) as MailFake;
-  });
-
-  it('should send welcome email on user registration', async () => {
-    const user = { name: 'John Doe', email: 'john@example.com' };
-    
-    await userService.registerUser(user);
-
-    // Check that email was sent
-    expect(mailFake.getSentCount()).toBe(1);
-
-    // Get sent emails and verify content
-    const sentEmails = mailFake.getSent();
-    expect(sentEmails[0].subject).toBe('Welcome to our platform!');
-    expect(sentEmails[0].context.name).toBe(user.name);
-  });
-});
-```
-
-### 5. Template Engine Configuration
-
-```typescript
-@Module({
-  imports: [
-    MailModule.forRoot({
-      transport: {
-        type: TransportType.SMTP,
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      },
-      templates: {
-        engine: TEMPLATE_ENGINE.HANDLEBARS,
-        directory: './templates',
-        options: {
-          helpers: {
-            // Custom helpers
-            currency: (amount: number) => `$${amount.toFixed(2)}`,
-            formatDate: (date: Date) => date.toLocaleDateString(),
-            uppercase: (str: string) => str.toUpperCase(),
-          },
-        },
-        partials: {
-          header: './templates/partials/header',
-          footer: './templates/partials/footer',
-        },
-      },
-    }),
-  ],
+MailModule.forRoot({
+  transport: {
+    type: TransportType.SES,
+    region: 'us-east-1',
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  },
+  from: { address: 'noreply@yourapp.com', name: 'Your App' },
+  templates: {
+    engine: TEMPLATE_ENGINE.HANDLEBARS,
+    directory: './templates',
+  },
 })
-export class AppModule {}
 ```
 
-## Features
+### Handlebars with Custom Helpers
 
-✨ **Advanced Mailable Classes** - Advanced mailable classes with envelope, content, attachments, and headers methods  
-🔗 **Fluent API** - Clean, intuitive interface with method chaining  
-🏗️ **Design Patterns** - Factory, Builder, Strategy patterns for maintainable code  
-📧 **Multiple Transports** - SMTP, Amazon SES, Mailgun support  
-🎨 **Template Engines** - Handlebars, EJS, Pug support with auto-detection  
-📎 **Attachment Builder** - Fluent attachment creation from file paths and in-memory data  
-🧪 **Testing Utilities** - MailFake class for testing email sending  
-⚙️ **Easy Configuration** - Simple module configuration with forRoot/forRootAsync  
-🎯 **Type Safety** - Full TypeScript support with comprehensive interfaces  
+```typescript
+MailModule.forRoot({
+  // ... transport config
+  templates: {
+    engine: TEMPLATE_ENGINE.HANDLEBARS,
+    directory: './templates',
+    options: {
+      helpers: {
+        currency: (amount: number) => `$${amount.toFixed(2)}`,
+        formatDate: (date: Date) => date.toLocaleDateString(),
+        uppercase: (str: string) => str.toUpperCase(),
+      },
+    },
+    partials: {
+      header: './templates/partials/header',
+      footer: './templates/partials/footer',
+    },
+  },
+})
+```
 
-## Supported Transports
+## 🧪 Development & Testing
 
-- **SMTP** - Standard SMTP servers
-- **Amazon SES** - AWS Simple Email Service  
-- **Mailgun** - Mailgun API
-- **Custom** - Implement your own transport
+### Mock Servers for Development
 
-## Documentation
+For development and testing, you can use mock servers that simulate the email service APIs:
 
-For detailed documentation, examples, and advanced usage:
+#### SMTP Mock Server
+```bash
+# Start SMTP mock server (port 1025)
+node mock-ses-server.js
+```
 
-- **📖 [Documentation Site](https://nestjs-mailable.github.io/)** - Comprehensive guides and API reference
-- **🚀 [Quick Start Guide](https://nestjs-mailable.github.io/docs/intro)** - Get started in minutes
+#### SES Mock Server
+```bash
+# Start SES mock server (port 4566)
+node examples/ses-mock-server.js
+```
 
-### Development
-
-This is a Turborepo monorepo. See [DEVELOPMENT.md](./DEVELOPMENT.md) for development instructions.
-
+#### Mailgun Mock Server
 ```bash
 # Install dependencies
-npm install
+npm install express cors multer fs-extra
 
-# Start documentation site
-npm run docs:start
-
-# Build all packages
-npm run build
-
-# Run tests
-npm run test
+# Start Mailgun mock server (port 3001)
+node mailgun-mock-server.js
 ```
 
-## Contributors
+### Docker Compose for Mock Servers
 
-Thanks to all the people who have contributed to this project:
+Start all mock servers with Docker:
 
-<a href="https://github.com/Mahmudulazamshohan/nestjs-mailable/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Mahmudulazamshohan/nestjs-mailable" />
-</a>
+```bash
+# Start all mock servers
+docker-compose -f docker-compose.mock.yml up
 
-## License
+# Or start specific services
+docker-compose -f docker-compose.mock.yml up mailgun-mock
+docker-compose -f docker-compose.mock.yml up ses-mock
+```
 
-MIT
+### Mock Server Configuration
+
+Configure your application to use mock servers:
+
+```typescript
+// .env for Mailgun mock
+MAIL_TRANSPORT=mailgun
+MAILGUN_DOMAIN=test-domain.com
+MAILGUN_API_KEY=test-api-key
+MAILGUN_HOST=localhost:3001
+MAILGUN_PROTOCOL=http:
+
+// .env for SES mock
+MAIL_TRANSPORT=ses
+SES_ENDPOINT=http://localhost:4566
+SES_REGION=us-east-1
+SES_ACCESS_KEY_ID=test
+SES_SECRET_ACCESS_KEY=test
+```
+
+### Testing Emails
+
+Mock servers provide endpoints to inspect sent emails:
+
+```bash
+# List emails sent via Mailgun mock
+curl http://localhost:3001/emails
+
+# List emails sent via SES mock
+curl http://localhost:4566/emails
+
+# Get specific email details
+curl http://localhost:3001/emails/EMAIL_ID
+```
+
+## 📚 Documentation
+
+**📖 [Full Documentation](https://mahmudulazamshohan.github.io/nestjs-mailable)** - Comprehensive guides, API reference, and examples
+
+## 🛠 Supported Transports
+
+| Transport | Description | Status |
+|-----------|-------------|--------|
+| **SMTP** | Standard SMTP servers | ✅ |
+| **Amazon SES** | AWS Simple Email Service | ✅ |
+| **Mailgun** | Mailgun API | ✅ |
+
+## 🎨 Template Engines
+
+| Engine | Extension | Helper Support | Partials |
+|--------|-----------|----------------|----------|
+| **Handlebars** | `.hbs` | ✅ | ✅ |
+| **EJS** | `.ejs` | ⚠️ | ✅ |
+| **Pug** | `.pug` | ⚠️ | ✅ |
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+
+## 📄 License
+
+MIT © [NestJS Mailable](https://github.com/Mahmudulazamshohan/nestjs-mailable)
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ for the NestJS community</sub>
+</div>

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MailService } from '../../../../dist';
 import { OrderShippedAdvanced, Order } from './mails/order-shipped-advanced.mailable';
 import { WelcomeEmail, WelcomeData } from './mails/welcome.mailable';
+import { TemplateHelpersTestMailable, TemplateHelpersTestData } from './mails/template-helpers-test.mailable';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
@@ -126,6 +127,36 @@ export class EmailService {
         success: false,
         message: 'Failed to send advanced order shipped email',
         mailer,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  async testTemplateHelpers(email: string, testData: TemplateHelpersTestData) {
+    try {
+      const templateHelpersMailable = new TemplateHelpersTestMailable(testData);
+
+      const result = await this.mailService.to(email).cc('dev@yourapp.com').send(templateHelpersMailable);
+
+      return {
+        success: true,
+        message: 'Template helpers tested successfully using Mailable class',
+        result,
+        helpersUsed: [
+          `currency(${testData.orderPrice}) -> $${testData.orderPrice.toFixed(2)}`,
+          `formatDate(${testData.createdAt.toISOString()}) -> ${testData.createdAt.toLocaleDateString()}`,
+          `uppercase("${testData.userName}") -> ${testData.userName.toUpperCase()}`,
+        ],
+        mailableFeatures: [
+          'Advanced envelope() with tags and metadata',
+          'Template-specific content() method',
+          'File attachments() with builders',
+          'Handlebars helper functions integration',
+        ],
+      };
+    } catch (error) {
+      return {
+        success: false,
         error: error instanceof Error ? error.message : String(error),
       };
     }

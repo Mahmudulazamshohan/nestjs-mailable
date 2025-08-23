@@ -1,6 +1,11 @@
 #!/bin/sh
-# Load nvm if available
-[ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
-# Add common Node.js paths
-export PATH="$PATH:$HOME/.nvm/versions/node/$(nvm current)/bin:$HOME/.yarn/bin:/usr/local/bin"
+. "$(dirname "$0")/_/husky.sh"
+
+# Run tests and build before pushing
+echo "Running tests..."
 yarn run test
+
+echo "Running build check..."
+yarn run build
+
+echo "All checks passed! Pushing..."

@@ -25,18 +25,18 @@ app.use(express.raw({ type: 'application/x-amz-json-1.1' }));
 app.post('/', async (req, res) => {
   try {
     console.log('📧 SES Mock: Received email request');
-    
+
     // Parse the raw email content
     const rawEmail = req.body.toString();
     console.log('Raw email data:', rawEmail.substring(0, 200) + '...');
-    
+
     // Generate a mock message ID
     const messageId = `000${Date.now()}-${Math.random().toString(36).substr(2, 8)}-000000`;
-    
+
     // Save the raw email for inspection
     const emailId = `ses_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const emailPath = path.join(EMAILS_DIR, `${emailId}.json`);
-    
+
     const emailRecord = {
       messageId,
       service: 'SES Mock',
@@ -47,19 +47,18 @@ app.post('/', async (req, res) => {
     };
 
     await fs.writeJson(emailPath, emailRecord, { spaces: 2 });
-    
+
     console.log('✅ SES Mock: Email saved with ID:', messageId);
-    
+
     // Return SES-like response
     res.status(200).json({
-      MessageId: messageId
+      MessageId: messageId,
     });
-
   } catch (error) {
     console.error('❌ SES Mock Error:', error);
     res.status(500).json({
       __type: 'MessageRejected',
-      message: 'Email sending failed'
+      message: 'Email sending failed',
     });
   }
 });
@@ -70,7 +69,7 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     service: 'SES Mock Server',
     port: PORT,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -79,18 +78,18 @@ app.get('/emails', async (req, res) => {
   try {
     const files = await fs.readdir(EMAILS_DIR);
     const emails = [];
-    
-    for (const file of files.filter(f => f.endsWith('.json'))) {
+
+    for (const file of files.filter((f) => f.endsWith('.json'))) {
       const filePath = path.join(EMAILS_DIR, file);
       const emailData = await fs.readJson(filePath);
       emails.push({
         id: file.replace('.json', ''),
         messageId: emailData.messageId,
         timestamp: emailData.timestamp,
-        service: emailData.service
+        service: emailData.service,
       });
     }
-    
+
     res.json({ emails, count: emails.length });
   } catch (error) {
     res.status(500).json({ error: 'Failed to read emails' });

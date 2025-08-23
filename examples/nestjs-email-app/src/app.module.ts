@@ -34,6 +34,16 @@ const getTransportConfig = () => {
           secretAccessKey: process.env.SES_SECRET_ACCESS_KEY || 'test',
         },
       };
+    case 'mailgun':
+      return {
+        type: TransportType.MAILGUN,
+        options: {
+          domain: process.env.MAILGUN_DOMAIN || 'test-domain.com',
+          apiKey: process.env.MAILGUN_API_KEY || 'test-api-key',
+          host: process.env.MAILGUN_HOST || 'localhost:3001',
+          protocol: process.env.MAILGUN_PROTOCOL || 'http:',
+        },
+      };
     case 'smtp':
     default:
       return {
@@ -43,8 +53,8 @@ const getTransportConfig = () => {
         secure: process.env.MAIL_SECURE === 'true',
         ignoreTLS: process.env.MAIL_IGNORE_TLS === 'true',
         auth: {
-          user: process.env.MAIL_USERNAME,
-          pass: process.env.MAIL_PASSWORD,
+          user: process.env.MAIL_USERNAME || 'princess.stanton@ethereal.email',
+          pass: process.env.MAIL_PASSWORD || 'kfakfxczrwCwVyvwgW',
         },
       };
   }

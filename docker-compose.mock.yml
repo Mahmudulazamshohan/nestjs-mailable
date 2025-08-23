@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mailgun-mock:
+    image: node:18-alpine
+    container_name: nestjs-mailable-mailgun-mock
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "3001:3001"
+    command: >
+      sh -c "
+        npm install express cors multer fs-extra &&
+        node mailgun-mock-server.js
+      "
+    environment:
+      - NODE_ENV=development
+    networks:
+      - nestjs-mailable-network
+
+  ses-mock:
+    image: node:18-alpine
+    container_name: nestjs-mailable-ses-mock
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "4566:4566"
+    command: >
+      sh -c "
+        npm install express cors fs-extra &&
+        node examples/ses-mock-server.js
+      "
+    environment:
+      - NODE_ENV=development
+    networks:
+      - nestjs-mailable-network
+
+  smtp-mock:
+    image: node:18-alpine
+    container_name: nestjs-mailable-smtp-mock
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "1025:1025"
+    command: >
+      sh -c "
+        npm install smtp-server &&
+        node mock-ses-server.js
+      "
+    environment:
+      - NODE_ENV=development
+    networks:
+      - nestjs-mailable-network
+
+networks:
+  nestjs-mailable-network:
+    driver: bridge

@@ -4,474 +4,422 @@ sidebar_position: 6
 
 # Advanced Features
 
-Explore the advanced features of NestJS Mailable for complex email scenarios, monitoring, and performance optimization.
+Explore the advanced features and patterns available in NestJS Mailable for complex email scenarios.
 
-## Monitoring and Analytics
+## Advanced Mailable Features
 
-### Email Tracking
+### Custom Headers and Metadata
 
 ```typescript
-export class AnalyticsService {
-  async trackEmailEvent(eventData: EmailEvent) {
-    // Track opens, clicks, bounces, etc.
-    await this.saveEmailEvent(eventData);
-    
-    // Update user engagement metrics
-    await this.updateUserEngagement(eventData.userId, eventData.type);
-    
-    // Trigger webhooks for external systems
-    if (eventData.type === 'bounce') {
-      await this.handleBounce(eventData);
-    }
+import { Mailable, MailableEnvelope, MailableContent, MailableHeaders } from 'nestjs-mailable';
+
+export class OrderConfirmationMail extends Mailable {
+  constructor(private order: Order) {
+    super();
   }
 
-  async getEmailAnalytics(filters: AnalyticsFilters) {
+  envelope(): MailableEnvelope {
     return {
-      totalSent: await this.getTotalSent(filters),
-      delivered: await this.getDelivered(filters),
-      opened: await this.getOpened(filters),
-      clicked: await this.getClicked(filters),
-      bounced: await this.getBounced(filters),
-      unsubscribed: await this.getUnsubscribed(filters),
+      subject: `Order Confirmation #${this.order.id}`,
+      tags: ['order', 'confirmation', 'transactional'],
+      metadata: {
+        orderId: this.order.id,
+        customerId: this.order.customerId,
+        orderTotal: this.order.total
+      }
+    };
+  }
+
+  headers(): MailableHeaders {
+    return {
+      'Message-ID': `<order-${this.order.id}@yourapp.com>`,
+      'X-Order-ID': this.order.id.toString(),
+      'X-Customer-ID': this.order.customerId.toString(),
+      'List-Unsubscribe': '<mailto:unsubscribe@yourapp.com>',
+      'Return-Path': 'bounces@yourapp.com'
+    };
+  }
+
+  content(): MailableContent {
+    return {
+      template: 'emails/order-confirmation',
+      with: {
+        order: this.order,
+        customer: this.order.customer,
+        items: this.order.items
+      }
     };
   }
 }
 ```
 
-### Custom Email Events
+### Multiple Attachments with Builder Pattern
 
 ```typescript
-import { Injectable, EventEmitter2 } from '@nestjs/event-emitter';
+import { Mailable, AttachmentBuilder, MailableAttachment } from 'nestjs-mailable';
+import * as fs from 'fs';
 
-@Injectable() 
-export class EnhancedMailService extends MailService {
+export class InvoiceEmail extends Mailable {
   constructor(
-    private eventEmitter: EventEmitter2,
-    // ... other dependencies
+    private invoice: Invoice,
+    private receiptPath: string
   ) {
     super();
   }
 
-  async send(content: Content): Promise<any> {
-    // Emit before send event
-    this.eventEmitter.emit('email.sending', {
-      to: content.to,
-      subject: content.subject,
-      tags: content.tags
-    });
+  attachments(): MailableAttachment[] {
+    return [
+      // File attachment
+      AttachmentBuilder
+        .fromPath(this.receiptPath)
+        .as(`invoice-${this.invoice.number}.pdf`)
+        .withMime('application/pdf')
+        .build(),
 
-    try {
-      const result = await super.send(content);
-      
-      // Emit success event
-      this.eventEmitter.emit('email.sent', {
-        to: content.to,
-        subject: content.subject,
-        messageId: result.messageId,
-        tags: content.tags
-      });
+      // Data attachment
+      AttachmentBuilder
+        .fromData(this.generateCSVData(), 'text/csv')
+        .as(`order-details-${this.invoice.number}.csv`)
+        .build(),
 
-      return result;
-    } catch (error) {
-      // Emit error event
-      this.eventEmitter.emit('email.failed', {
-        to: content.to,
-        subject: content.subject,
-        error: error.message,
-        tags: content.tags
-      });
+      // Storage attachment  
+      AttachmentBuilder
+        .fromStorage('./storage/terms-and-conditions.pdf')
+        .as('terms-and-conditions.pdf')
+        .withMime('application/pdf')
+        .build()
+    ];
+  }
 
-      throw error;
-    }
+  private generateCSVData(): string {
+    const headers = ['Item', 'Quantity', 'Price', 'Total'];
+    const rows = this.invoice.items.map(item => 
+      [item.name, item.quantity, item.price, item.total].join(',')
+    );
+    return [headers.join(','), ...rows].join('\n');
   }
 }
 ```
 
-### Event Listeners
+## Template Engine Customization
+
+### Advanced Handlebars Configuration
 
 ```typescript
-import { OnEvent } from '@nestjs/event-emitter';
+import { MailModule, TEMPLATE_ENGINE } from 'nestjs-mailable';
 
-@Injectable()
-export class EmailEventHandler {
-  @OnEvent('email.sent')
-  handleEmailSent(event: EmailSentEvent) {
-    console.log(`Email sent to ${event.to}: ${event.subject}`);
-    // Log to analytics service
-    this.analyticsService.recordEmailSent(event);
-  }
-
-  @OnEvent('email.failed')
-  handleEmailFailed(event: EmailFailedEvent) {
-    console.error(`Email failed to ${event.to}: ${event.error}`);
-    // Alert monitoring service
-    this.monitoringService.recordEmailFailure(event);
-    
-    // Retry logic for critical emails
-    if (event.tags?.includes('critical')) {
-      this.retryService.scheduleRetry(event);
-    }
-  }
-
-  @OnEvent('email.bounced')
-  handleEmailBounced(event: EmailBouncedEvent) {
-    // Mark email as invalid
-    this.userService.markEmailInvalid(event.to);
-    
-    // Remove from mailing lists
-    this.mailingListService.removeEmail(event.to);
-  }
-}
-```
-
-## Performance Optimization
-
-### Connection Pooling
-
-```typescript
-{
-  mailers: {
-    smtp: {
-      transport: 'smtp',
-      host: 'smtp.gmail.com',
-      port: 587,
-      pool: true, // Enable connection pooling
-      maxConnections: 5, // Max concurrent connections
-      maxMessages: 100, // Messages per connection
-      rateDelta: 1000, // Rate limiting: time window
-      rateLimit: 10, // Rate limiting: max messages per window
-    }
-  }
-}
-```
-
-### Batch Processing
-
-```typescript
-@Injectable()
-export class BatchEmailService {
-  async sendBatchEmails(
-    emails: BatchEmail[],
-    batchSize: number = 50
-  ): Promise<BatchResult[]> {
-    const results: BatchResult[] = [];
-    
-    // Process emails in batches
-    for (let i = 0; i < emails.length; i += batchSize) {
-      const batch = emails.slice(i, i + batchSize);
-      const batchResults = await this.processBatch(batch);
-      results.push(...batchResults);
-      
-      // Small delay between batches to avoid overwhelming the server
-      await this.delay(100);
-    }
-    
-    return results;
-  }
-
-  private async processBatch(batch: BatchEmail[]): Promise<BatchResult[]> {
-    const promises = batch.map(email => this.sendSingleEmail(email));
-    const results = await Promise.allSettled(promises);
-    
-    return results.map((result, index) => ({
-      email: batch[index].to.address,
-      status: result.status === 'fulfilled' ? 'sent' : 'failed',
-      error: result.status === 'rejected' ? result.reason : undefined
-    }));
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-}
-```
-
-### Memory Optimization
-
-```typescript
-@Injectable()
-export class OptimizedMailService {
-  private emailCache = new Map<string, CachedTemplate>();
-  private readonly MAX_CACHE_SIZE = 100;
-
-  async sendWithOptimization(content: Content): Promise<any> {
-    // Use streaming for large attachments
-    if (content.attachments?.some(a => a.size > 1024 * 1024)) {
-      return this.sendWithStreaming(content);
-    }
-
-    // Cache compiled templates
-    if (content.template) {
-      const cached = this.getCachedTemplate(content.template);
-      if (cached) {
-        content.html = this.renderTemplate(cached, content.context);
+@Module({
+  imports: [
+    MailModule.forRoot({
+      transport: {
+        type: TransportType.SMTP,
+        // ... transport config
+      },
+      templates: {
+        engine: TEMPLATE_ENGINE.HANDLEBARS,
+        directory: './email/templates',
+        partials: {
+          header: './partials/email-header',
+          footer: './partials/email-footer',
+          button: './partials/cta-button',
+          productList: './partials/product-list'
+        },
+        options: {
+          helpers: {
+            // Custom helper functions
+            currency: (amount: number, currency = 'USD') => {
+              return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency
+              }).format(amount);
+            },
+            
+            formatDate: (date: Date, format = 'long') => {
+              return new Intl.DateTimeFormat('en-US', {
+                dateStyle: format as any
+              }).format(date);
+            },
+            
+            ifEquals: function(arg1: any, arg2: any, options: any) {
+              return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+            },
+            
+            times: function(n: number, options: any) {
+              let result = '';
+              for (let i = 0; i < n; i++) {
+                result += options.fn(i);
+              }
+              return result;
+            }
+          }
+        }
       }
-    }
-
-    return this.send(content);
-  }
-
-  private getCachedTemplate(templateName: string): CachedTemplate | null {
-    if (this.emailCache.has(templateName)) {
-      return this.emailCache.get(templateName)!;
-    }
-
-    // Load and cache template
-    const template = this.loadTemplate(templateName);
-    if (this.emailCache.size >= this.MAX_CACHE_SIZE) {
-      // Remove oldest entry
-      const firstKey = this.emailCache.keys().next().value;
-      this.emailCache.delete(firstKey);
-    }
-    
-    this.emailCache.set(templateName, template);
-    return template;
-  }
-}
+    })
+  ]
+})
+export class MailModule {}
 ```
 
-## Security Features
+### Template Usage with Custom Helpers
 
-### Email Encryption
+```handlebars
+{{> header company="Your Company" }}
 
-```typescript
-import * as crypto from 'crypto';
-
-@Injectable()
-export class SecureMailService {
-  private encryptionKey: string;
-
-  constructor() {
-    this.encryptionKey = process.env.EMAIL_ENCRYPTION_KEY || 'default-key';
-  }
-
-  async sendSecureEmail(content: Content & { encrypt?: boolean }): Promise<any> {
-    if (content.encrypt) {
-      content.html = this.encryptContent(content.html);
-      content.text = this.encryptContent(content.text);
-    }
-
-    // Add security headers
-    content.headers = {
-      ...content.headers,
-      'X-Secure-Email': 'true',
-      'X-Content-Encrypted': content.encrypt ? 'true' : 'false'
-    };
-
-    return this.mailService.send(content);
-  }
-
-  private encryptContent(content: string): string {
-    if (!content) return content;
+<div class="email-body">
+  <h1>Order Confirmation</h1>
+  
+  <p>Hi {{customer.name}},</p>
+  <p>Your order placed on {{formatDate order.date 'short'}} has been confirmed.</p>
+  
+  <div class="order-details">
+    <h2>Order #{{order.id}}</h2>
     
-    const cipher = crypto.createCipher('aes256', this.encryptionKey);
-    let encrypted = cipher.update(content, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return encrypted;
-  }
-}
+    {{#each order.items}}
+    <div class="item">
+      <span>{{name}}</span>
+      <span>{{quantity}} × {{currency price}}</span>
+      <span>{{currency total}}</span>
+    </div>
+    {{/each}}
+    
+    <div class="total">
+      <strong>Total: {{currency order.total}}</strong>
+    </div>
+  </div>
+  
+  {{#ifEquals order.status 'paid'}}
+    {{> button text="View Order" url=order.viewUrl }}
+  {{else}}
+    {{> button text="Complete Payment" url=order.paymentUrl }}
+  {{/ifEquals}}
+</div>
+
+{{> footer }}
 ```
 
-### Rate Limiting
+## Testing Email Functionality
+
+### Using MailFake for Testing
 
 ```typescript
-import { RateLimiterMemory } from 'rate-limiter-flexible';
+import { Test } from '@nestjs/testing';
+import { MailService } from 'nestjs-mailable';
 
-@Injectable()
-export class RateLimitedMailService {
-  private rateLimiter = new RateLimiterMemory({
-    keyPrefix: 'email_limit',
-    points: 100, // 100 emails
-    duration: 3600, // per hour
+describe('OrderService', () => {
+  let mailService: MailService;
+  let orderService: OrderService;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [OrderService, MailService],
+    }).compile();
+
+    mailService = module.get<MailService>(MailService);
+    orderService = module.get<OrderService>(OrderService);
+    
+    // Enable fake mode for testing
+    const mailFake = mailService.fake();
   });
 
-  async sendWithRateLimit(
-    content: Content, 
-    userId: string
-  ): Promise<any> {
-    try {
-      await this.rateLimiter.consume(userId);
-      return this.mailService.send(content);
-    } catch (rejRes) {
-      throw new Error(`Rate limit exceeded. Try again in ${Math.round(rejRes.msBeforeNext / 1000)} seconds`);
-    }
-  }
-}
-```
-
-### Content Sanitization
-
-```typescript
-import * as DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
-
-@Injectable()
-export class SanitizedMailService {
-  private window = new JSDOM('').window;
-  private purify = DOMPurify(this.window);
-
-  async sendSanitizedEmail(content: Content): Promise<any> {
-    // Sanitize HTML content
-    if (content.html) {
-      content.html = this.purify.sanitize(content.html, {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'a', 'img'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'style']
-      });
-    }
-
-    // Validate recipient email
-    if (!this.isValidEmail(content.to.address)) {
-      throw new Error('Invalid recipient email address');
-    }
-
-    return this.mailService.send(content);
-  }
-
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-}
-```
-
-## Custom Transport Implementation
-
-### Creating a Custom Transport
-
-```typescript
-import { MailTransport, Content } from 'nestjs-mailable';
-
-export class SlackTransport implements MailTransport {
-  private webhookUrl: string;
-
-  constructor(options: { webhookUrl: string }) {
-    this.webhookUrl = options.webhookUrl;
-  }
-
-  async send(content: Content): Promise<any> {
-    const slackMessage = {
-      text: `New Email: ${content.subject}`,
-      attachments: [
-        {
-          color: 'good',
-          fields: [
-            {
-              title: 'To',
-              value: content.to.address,
-              short: true
-            },
-            {
-              title: 'Subject',
-              value: content.subject,
-              short: true
-            },
-            {
-              title: 'Content',
-              value: content.text || 'HTML content',
-              short: false
-            }
-          ]
-        }
-      ]
-    };
-
-    const response = await fetch(this.webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(slackMessage)
-    });
-
-    if (!response.ok) {
-      throw new Error(`Slack notification failed: ${response.statusText}`);
-    }
-
-    return {
-      messageId: `slack-${Date.now()}`,
-      accepted: [content.to.address],
-      rejected: [],
-      response: 'Message sent to Slack'
-    };
-  }
-}
-```
-
-### Registering Custom Transport
-
-```typescript
-import { MailTransportFactory } from 'nestjs-mailable';
-
-@Injectable()
-export class CustomTransportFactory extends MailTransportFactory {
-  createTransport(config: any): MailTransport {
-    if (config.transport === 'slack') {
-      return new SlackTransport(config.options);
-    }
+  it('should send order confirmation email', async () => {
+    const mailFake = mailService.fake();
+    const order = { id: 123, customer: { email: 'test@example.com' } };
     
-    return super.createTransport(config);
-  }
-}
+    await orderService.confirmOrder(order);
+    
+    // Assert email was sent
+    const sentMails = mailFake.getSentMails();
+    expect(sentMails).toHaveLength(1);
+    
+    const sentEmail = sentMails[0];
+    expect(sentEmail.to).toBe('test@example.com');
+    expect(sentEmail.subject).toContain('Order Confirmation');
+  });
 
-// In your module
+  it('should track sent emails in fake mode', async () => {
+    const mailFake = mailService.fake();
+    const order = { id: 123, customer: { email: 'test@example.com' } };
+    
+    await orderService.confirmOrder(order);
+    
+    // Verify emails are tracked in fake mode
+    mailFake.assertSentCount(1);
+    mailFake.assertSent((mail) => mail.to === 'test@example.com');
+  });
+});
+```
+
+### Testing Mailable Classes
+
+```typescript
+import { OrderConfirmationMail } from './order-confirmation.mailable';
+
+describe('OrderConfirmationMail', () => {
+  let mailable: OrderConfirmationMail;
+  let mockOrder: Order;
+
+  beforeEach(() => {
+    mockOrder = {
+      id: 12345,
+      customerId: 1,
+      customer: { name: 'John Doe', email: 'john@example.com' },
+      items: [
+        { name: 'Widget', quantity: 2, price: 10.99, total: 21.98 }
+      ],
+      total: 21.98,
+      date: new Date('2024-01-15')
+    };
+    
+    mailable = new OrderConfirmationMail(mockOrder);
+  });
+
+  it('should generate correct envelope', () => {
+    const envelope = mailable.envelope();
+    
+    expect(envelope.subject).toBe('Order Confirmation #12345');
+    expect(envelope.tags).toContain('order');
+    expect(envelope.tags).toContain('confirmation');
+    expect(envelope.metadata?.orderId).toBe(12345);
+  });
+
+  it('should generate correct headers', () => {
+    const headers = mailable.headers();
+    
+    expect(headers['Message-ID']).toBe('<order-12345@yourapp.com>');
+    expect(headers['X-Order-ID']).toBe('12345');
+    expect(headers['X-Customer-ID']).toBe('1');
+  });
+
+  it('should provide correct template data', () => {
+    const content = mailable.content();
+    
+    expect(content.template).toBe('emails/order-confirmation');
+    expect(content.with?.order).toEqual(mockOrder);
+    expect(content.with?.customer).toEqual(mockOrder.customer);
+  });
+});
+```
+
+## Transport-Specific Features
+
+### SES-Specific Configuration
+
+```typescript
+import { MailModule, TransportType } from 'nestjs-mailable';
+
 @Module({
-  providers: [
-    {
-      provide: MailTransportFactory,
-      useClass: CustomTransportFactory
-    }
+  imports: [
+    MailModule.forRoot({
+      transport: {
+        type: TransportType.SES,
+        region: 'us-east-1',
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+        },
+        // SES-specific endpoint for LocalStack testing
+        endpoint: process.env.NODE_ENV === 'test' ? 'http://localhost:4566' : undefined
+      },
+      from: {
+        address: 'noreply@yourdomain.com',
+        name: 'Your App'
+      }
+    })
   ]
 })
 export class AppModule {}
 ```
 
-## Webhook Integration
-
-### Email Event Webhooks
+### Mailgun-Specific Features
 
 ```typescript
-@Controller('webhooks/email')
-export class EmailWebhookController {
-  constructor(private analyticsService: AnalyticsService) {}
-
-  @Post('mailgun')
-  async handleMailgunWebhook(@Body() payload: any) {
-    const event = {
-      type: payload['event-data'].event,
-      recipient: payload['event-data'].recipient,
-      timestamp: new Date(payload['event-data'].timestamp * 1000),
-      messageId: payload['event-data'].message.headers['message-id']
-    };
-
-    await this.analyticsService.trackEmailEvent(event);
-    return { status: 'ok' };
-  }
-
-  @Post('ses')
-  async handleSESWebhook(@Body() payload: any) {
-    // Handle SES bounce/complaint notifications
-    if (payload.Type === 'Notification') {
-      const message = JSON.parse(payload.Message);
-      
-      if (message.notificationType === 'Bounce') {
-        await this.handleBounce(message);
-      } else if (message.notificationType === 'Complaint') {
-        await this.handleComplaint(message);
-      }
+// Using Mailgun with custom domain and mock server support
+MailModule.forRoot({
+  transport: {
+    type: TransportType.MAILGUN,
+    options: {
+      domain: 'mg.yourdomain.com',
+      apiKey: process.env.MAILGUN_API_KEY!,
+      // For development/testing with mock server
+      host: process.env.NODE_ENV === 'development' ? 'localhost:3001' : undefined,
+      protocol: process.env.NODE_ENV === 'development' ? 'http:' : undefined
     }
+  }
+})
+```
 
-    return { status: 'ok' };
+## Error Handling and Resilience
+
+### Graceful Error Handling
+
+```typescript
+@Injectable()
+export class NotificationService {
+  constructor(private mailService: MailService) {}
+
+  async sendWelcomeEmail(user: User): Promise<void> {
+    try {
+      await this.mailService
+        .to(user.email)
+        .send(new WelcomeEmail(user));
+        
+      console.log(`Welcome email sent to ${user.email}`);
+    } catch (error) {
+      console.error(`Failed to send welcome email to ${user.email}:`, error.message);
+      
+      // Log error for monitoring
+      this.logEmailError(user.email, 'welcome', error);
+      
+      // Don't throw - email failure shouldn't break user registration
+      // Instead, queue for retry or use fallback notification method
+      await this.queueEmailRetry(user.email, 'welcome', user);
+    }
   }
 
-  private async handleBounce(message: any) {
-    for (const recipient of message.bounce.bouncedRecipients) {
-      await this.analyticsService.trackEmailEvent({
-        type: 'bounce',
-        recipient: recipient.emailAddress,
-        bounceType: message.bounce.bounceType,
-        timestamp: new Date(message.bounce.timestamp)
-      });
+  private async logEmailError(email: string, type: string, error: Error): Promise<void> {
+    // Log to your monitoring service
+    console.error({
+      event: 'email_send_failed',
+      email,
+      type,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  private async queueEmailRetry(email: string, type: string, data: any): Promise<void> {
+    // Queue for retry with exponential backoff
+    // This could use Bull, Bee, or any job queue system
+  }
+}
+```
+
+### Template Engine Fallbacks
+
+```typescript
+@Injectable()
+export class EmailService {
+  constructor(private mailService: MailService) {}
+
+  async sendWithFallback(user: User): Promise<void> {
+    try {
+      // Try to send with template
+      await this.mailService
+        .to(user.email)
+        .template('welcome', { user })
+        .send();
+    } catch (templateError) {
+      console.warn('Template rendering failed, falling back to HTML:', templateError.message);
+      
+      // Fallback to simple HTML
+      await this.mailService
+        .to(user.email)
+        .subject('Welcome!')
+        .html(`<h1>Welcome ${user.name}!</h1><p>Thanks for joining us.</p>`)
+        .send();
     }
   }
 }
 ```
 
-This completes the advanced features documentation, covering monitoring, performance optimization, security, custom transports, and webhooks.
+This documentation now focuses specifically on features that are actually available in the nestjs-mailable library, including advanced Mailable class usage, template customization, testing utilities, transport-specific configurations, and practical error handling patterns.
