@@ -137,3 +137,7 @@ pnpm-lock.yaml
 .claude/
 examples/nestjs-email-app/dist
 examples/nestjs-email-app/.env
+
+# AI assistant configuration files
+CLAUDE.md
+QWEN.md
