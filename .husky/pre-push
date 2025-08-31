@@ -1,7 +1,7 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# Add Node.js to PATH for GUI Git clients
+export PATH="$HOME/.nvm/versions/node/v22.17.1/bin:$PATH"
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
 
-# Run tests and build before pushing
 echo "Running tests..."
 yarn run test
 

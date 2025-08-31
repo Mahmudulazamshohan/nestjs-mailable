@@ -3,10 +3,10 @@ import { BaseTemplateEngine, ensurePackageAvailable } from './base.engine';
 import { TemplateConfiguration } from '../interfaces/mail.interface';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let Handlebars: any;
+let HandlebarsLib: any;
 
 try {
-  Handlebars = ensurePackageAvailable('handlebars');
+  HandlebarsLib = ensurePackageAvailable('handlebars');
 } catch (error) {
   console.warn('Handlebars not available:', (error as Error).message);
 }
@@ -16,12 +16,17 @@ export class HandlebarsTemplateEngine extends BaseTemplateEngine {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private compiledTemplates = new Map<string, any>();
   private isConfigured = false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private handlebars: any;
 
   constructor(templateDir: string, mainFile: string, config?: TemplateConfiguration) {
     super(templateDir, mainFile, 'hbs');
-    if (!Handlebars) {
+    if (!HandlebarsLib) {
       throw new Error('Handlebars template engine is not available. Please install it with: npm install handlebars');
     }
+
+    // Create a new Handlebars instance for this template engine
+    this.handlebars = HandlebarsLib.create();
 
     if (config) {
       this.configureEngine(config);
@@ -53,7 +58,7 @@ export class HandlebarsTemplateEngine extends BaseTemplateEngine {
       let compiledTemplate = this.compiledTemplates.get(template);
       if (!compiledTemplate) {
         const templateSource = await this.loadTemplate(template);
-        compiledTemplate = Handlebars.compile(templateSource);
+        compiledTemplate = this.handlebars.compile(templateSource);
         this.compiledTemplates.set(template, compiledTemplate);
       }
       return compiledTemplate(context);
@@ -64,7 +69,7 @@ export class HandlebarsTemplateEngine extends BaseTemplateEngine {
 
   async compile(source: string): Promise<(context: Record<string, unknown>) => string> {
     try {
-      const compiledTemplate = Handlebars.compile(source);
+      const compiledTemplate = this.handlebars.compile(source);
       return (context: Record<string, unknown>) => compiledTemplate(context);
     } catch (error) {
       throw new Error(`Failed to compile Handlebars template: ${(error as Error).message}`);
@@ -72,14 +77,23 @@ export class HandlebarsTemplateEngine extends BaseTemplateEngine {
   }
 
   registerHelper(name: string, helper: (...args: unknown[]) => unknown): void {
-    if (Handlebars) {
-      Handlebars.registerHelper(name, helper);
+    if (this.handlebars) {
+      // Wrap helper with error handling
+      const safeHelper = (...args: unknown[]) => {
+        try {
+          return helper(...args);
+        } catch (error) {
+          console.warn(`Handlebars helper '${name}' error:`, (error as Error).message);
+          return args[0] || ''; // Return the first argument or empty string as fallback
+        }
+      };
+      this.handlebars.registerHelper(name, safeHelper);
     }
   }
 
   registerPartial(name: string, partial: string): void {
-    if (Handlebars) {
-      Handlebars.registerPartial(name, partial);
+    if (this.handlebars) {
+      this.handlebars.registerPartial(name, partial);
     }
   }
 

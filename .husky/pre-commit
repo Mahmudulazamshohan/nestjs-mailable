@@ -1,6 +1,6 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# Add Node.js to PATH for GUI Git clients
+export PATH="$HOME/.nvm/versions/node/v22.17.1/bin:$PATH"
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
 
-# Run lint (errors only) and typecheck before commit
 npx eslint src/**/*.ts --quiet
 npm run typecheck

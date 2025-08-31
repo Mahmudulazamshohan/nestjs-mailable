@@ -78,9 +78,9 @@ const getTemplateConfig = () => {
         },
         options: {
           helpers: {
-            currency: (amount: number) => `${amount.toFixed(2)}`,
-            formatDate: (date: Date) => date.toLocaleDateString(),
-            uppercase: (str: string) => str.toUpperCase(),
+            currency: (amount: number) => `$${(amount || 0).toFixed(2)}`,
+            formatDate: (date: Date) => (date ? new Date(date).toLocaleDateString() : new Date().toLocaleDateString()),
+            uppercase: (str: string) => (str || '').toString().toUpperCase(),
           },
         },
       };

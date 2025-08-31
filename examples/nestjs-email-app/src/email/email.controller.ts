@@ -81,6 +81,110 @@ export class EmailController {
     }
   }
 
+  @Post('send-all-templates')
+  async sendAllTemplates(@Body() body: { email: string }) {
+    const results: any[] = [];
+    const templateEngines = ['handlebars', 'ejs', 'pug'];
+
+    for (const engine of templateEngines) {
+      try {
+        // Set environment variable for current template engine
+        process.env.MAIL_TEMPLATE_ENGINE = engine;
+
+        // Send Welcome Email (only available in handlebars)
+        if (engine === 'handlebars') {
+          const welcomeResult = await this.emailService.sendWelcomeEmail(
+            body.email,
+            'Test User',
+            'https://example.com/welcome',
+            ['Advanced Templates', 'Multiple Transports', 'Attachment Support'],
+          );
+
+          results.push({
+            engine,
+            template: 'welcome.hbs',
+            type: 'welcome',
+            result: welcomeResult,
+            status: 'success',
+          });
+        }
+
+        // Send Order Shipped Email (available in all engines)
+        const orderData: Order = {
+          id: Math.floor(Math.random() * 10000) + 1000,
+          name: 'Premium Package',
+          price: 99.99,
+          invoice_number: `INV-${engine.toUpperCase()}-${Date.now()}`,
+          customer_email: body.email,
+        };
+
+        const orderMailable = new OrderShippedAdvanced(orderData);
+        const orderResult = await this.emailService.sendMailable(body.email, orderMailable);
+
+        results.push({
+          engine,
+          template: `shipped.${engine === 'handlebars' ? 'hbs' : engine}`,
+          type: 'order-shipped',
+          result: orderResult,
+          status: 'success',
+        });
+
+        // Send Template Helpers Test (handlebars only)
+        if (engine === 'handlebars') {
+          const testData = {
+            customerEmail: body.email,
+            orderId: 'ORD-HELPERS-001',
+            orderName: 'Helper Test Order',
+            orderPrice: 75.5,
+            invoiceNumber: 'INV-HELPERS-001',
+            createdAt: new Date(),
+            items: [
+              { name: 'Test Item 1', price: 50.0 },
+              { name: 'Test Item 2', price: 25.5 },
+            ],
+            total: 75.5,
+            discount: 5.0,
+            userName: 'helper tester',
+            description: 'testing all helper functions in templates',
+          };
+
+          const helpersResult = await this.emailService.testTemplateHelpers(body.email, testData);
+
+          results.push({
+            engine,
+            template: 'test-helpers.hbs',
+            type: 'template-helpers',
+            result: helpersResult,
+            status: 'success',
+          });
+        }
+
+        // Wait between engines to avoid overwhelming
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (error) {
+        results.push({
+          engine,
+          status: 'error',
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Sent all available templates using all template engines',
+      totalSent: results.filter((r) => r.status === 'success').length,
+      results,
+      templatesSent: results.filter((r) => r.status === 'success').map((r) => `${r.template} (${r.type})`),
+      etherealInfo: {
+        url: 'https://ethereal.email/',
+        username: process.env.MAIL_USERNAME,
+        password: process.env.MAIL_PASSWORD,
+        message: 'Login to Ethereal Email to view sent emails',
+      },
+    };
+  }
+
   @Post('test-all-engines')
   async testAllEngines(@Body() body: { email: string }) {
     const templateEngines = ['handlebars', 'ejs', 'pug'];
@@ -176,6 +280,12 @@ export class EmailController {
         'No more withEngine() - cleaner API',
       ],
       endpoints: {
+        sendAllTemplates: {
+          method: 'POST',
+          path: '/email/send-all-templates',
+          body: { email: 'string' },
+          description: 'Send ALL available templates using ALL template engines (5 emails total)',
+        },
         testAllEngines: {
           method: 'POST',
           path: '/email/test-all-engines',
@@ -213,6 +323,8 @@ export class EmailController {
         },
       },
       exampleUsage: {
+        sendAllTemplates:
+          'curl -X POST http://localhost:3000/email/send-all-templates -H "Content-Type: application/json" -d \'{"email": "test@example.com"}\'',
         testAllEngines:
           'curl -X POST http://localhost:3000/email/test-all-engines -H "Content-Type: application/json" -d \'{"email": "test@example.com"}\'',
         sendWelcome:
