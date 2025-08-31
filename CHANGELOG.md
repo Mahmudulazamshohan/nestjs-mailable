@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.3.0...v1.4.0) (2025-08-31)
+
+
+### Features
+
+* update nestjs 11.1.6 support ([5b61346](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/5b61346f9ba2fb2a3d3062f5443788e61a7b73a6))
+
 # [1.3.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.2.0...v1.3.0) (2025-08-24)
 
 
