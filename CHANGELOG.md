@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.4.0...v1.5.0) (2025-10-13)
+
+
+### Features
+
+* aws ses configuration issue resolved ([f33a69e](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/f33a69e29b5a041c9f711c5b39a559779052a5d2))
+
 # [1.4.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.3.0...v1.4.0) (2025-08-31)
 
 
