@@ -313,9 +313,12 @@ import { MailModule, TransportType } from 'nestjs-mailable';
       transport: {
         type: TransportType.SES,
         region: 'us-east-1',
+        host: process.env.MAIL_HOST || 'email-smtp.us-east-1.amazonaws.com',
+        port: parseInt(process.env.MAIL_PORT || '587'),
+        secure: process.env.MAIL_SECURE === 'true',
         credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+          user: process.env.MAIL_USERNAME!,
+          pass: process.env.MAIL_PASSWORD!
         },
         // SES-specific endpoint for LocalStack testing
         endpoint: process.env.NODE_ENV === 'test' ? 'http://localhost:4566' : undefined

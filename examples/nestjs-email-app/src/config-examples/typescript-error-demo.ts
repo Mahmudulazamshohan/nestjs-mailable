@@ -6,11 +6,11 @@
 import { MailModule, TransportType, TEMPLATE_ENGINE } from '../../../../dist';
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'host' is missing in type
+//  TYPESCRIPT ERROR: Property 'host' is missing in type
 const invalidSMTPConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SMTP,
-    // host: 'smtp.gmail.com', // ❌ Missing required field - TypeScript error
+    // host: 'smtp.gmail.com', //  Missing required field - TypeScript error
     auth: {
       user: 'user@gmail.com',
       pass: 'password',
@@ -21,13 +21,13 @@ const invalidSMTPConfig = MailModule.forRoot({
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'user' is missing in type
+//  TYPESCRIPT ERROR: Property 'user' is missing in type
 const invalidSMTPAuthConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SMTP,
     host: 'smtp.gmail.com',
     auth: {
-      // user: 'user@gmail.com', // ❌ Missing required field - TypeScript error
+      // user: 'user@gmail.com', //  Missing required field - TypeScript error
       pass: 'password',
     },
   },
@@ -36,14 +36,14 @@ const invalidSMTPAuthConfig = MailModule.forRoot({
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'pass' is missing in type
+//  TYPESCRIPT ERROR: Property 'pass' is missing in type
 const invalidSMTPPasswordConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SMTP,
     host: 'smtp.gmail.com',
     auth: {
       user: 'user@gmail.com',
-      // pass: 'password', // ❌ Missing required field - TypeScript error
+      // pass: 'password', //  Missing required field - TypeScript error
     },
   },
   from: { address: 'noreply@yourapp.com', name: 'Your App' },
@@ -51,11 +51,11 @@ const invalidSMTPPasswordConfig = MailModule.forRoot({
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'region' is missing in type
+//  TYPESCRIPT ERROR: Property 'region' is missing in type
 const invalidSESConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SES,
-    // region: 'us-east-1', // ❌ Missing required field - TypeScript error
+    // region: 'us-east-1', //  Missing required field - TypeScript error
     credentials: {
       accessKeyId: 'your-access-key',
       secretAccessKey: 'your-secret-key',
@@ -66,25 +66,25 @@ const invalidSESConfig = MailModule.forRoot({
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'credentials' is missing in type
+//  TYPESCRIPT ERROR: Property 'credentials' is missing in type
 const invalidSESCredentialsConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SES,
     region: 'us-east-1',
-    // credentials: { ... }, // ❌ Missing required field - TypeScript error
+    // credentials: { ... }, //  Missing required field - TypeScript error
   },
   from: { address: 'noreply@yourapp.com', name: 'Your App' },
 });
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'accessKeyId' is missing in type
+//  TYPESCRIPT ERROR: Property 'accessKeyId' is missing in type
 const invalidSESAccessKeyConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SES,
     region: 'us-east-1',
     credentials: {
-      // accessKeyId: 'your-access-key', // ❌ Missing required field - TypeScript error
+      // accessKeyId: 'your-access-key', //  Missing required field - TypeScript error
       secretAccessKey: 'your-secret-key',
     },
   },
@@ -93,14 +93,14 @@ const invalidSESAccessKeyConfig = MailModule.forRoot({
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'secretAccessKey' is missing in type
+//  TYPESCRIPT ERROR: Property 'secretAccessKey' is missing in type
 const invalidSESSecretKeyConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SES,
     region: 'us-east-1',
     credentials: {
       accessKeyId: 'your-access-key',
-      // secretAccessKey: 'your-secret-key', // ❌ Missing required field - TypeScript error
+      // secretAccessKey: 'your-secret-key', //  Missing required field - TypeScript error
     },
   },
   from: { address: 'noreply@yourapp.com', name: 'Your App' },
@@ -108,23 +108,23 @@ const invalidSESSecretKeyConfig = MailModule.forRoot({
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'options' is missing in type
+//  TYPESCRIPT ERROR: Property 'options' is missing in type
 const invalidMailgunConfig = MailModule.forRoot({
   transport: {
     type: TransportType.MAILGUN,
-    // options: { ... }, // ❌ Missing required field - TypeScript error
+    // options: { ... }, //  Missing required field - TypeScript error
   },
   from: { address: 'noreply@yourapp.com', name: 'Your App' },
 });
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'domain' is missing in type
+//  TYPESCRIPT ERROR: Property 'domain' is missing in type
 const invalidMailgunDomainConfig = MailModule.forRoot({
   transport: {
     type: TransportType.MAILGUN,
     options: {
-      // domain: 'mg.yourdomain.com', // ❌ Missing required field - TypeScript error
+      // domain: 'mg.yourdomain.com', //  Missing required field - TypeScript error
       apiKey: 'your-mailgun-api-key',
     },
   },
@@ -133,13 +133,13 @@ const invalidMailgunDomainConfig = MailModule.forRoot({
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Property 'apiKey' is missing in type
+//  TYPESCRIPT ERROR: Property 'apiKey' is missing in type
 const invalidMailgunApiKeyConfig = MailModule.forRoot({
   transport: {
     type: TransportType.MAILGUN,
     options: {
       domain: 'mg.yourdomain.com',
-      // apiKey: 'your-mailgun-api-key', // ❌ Missing required field - TypeScript error
+      // apiKey: 'your-mailgun-api-key', //  Missing required field - TypeScript error
     },
   },
   from: { address: 'noreply@yourapp.com', name: 'Your App' },
@@ -147,18 +147,18 @@ const invalidMailgunApiKeyConfig = MailModule.forRoot({
 */
 
 /*
-// ❌ TYPESCRIPT ERROR: Type '{ type: "ses"; host: string; }' is not assignable to type 'TransportConfiguration'
+//  TYPESCRIPT ERROR: Type '{ type: "ses"; host: string; }' is not assignable to type 'TransportConfiguration'
 // This shows that you can't mix properties from different transport types
 const invalidMixedConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SES,
-    host: 'smtp.gmail.com', // ❌ 'host' is not valid for SES transport - TypeScript error
+    host: 'smtp.gmail.com', //  'host' is not valid for SES transport - TypeScript error
   },
   from: { address: 'noreply@yourapp.com', name: 'Your App' },
 });
 */
 
-// ✅ VALID: Correct SMTP configuration
+// VALID: Correct SMTP configuration
 export const validSMTPConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SMTP,
@@ -177,7 +177,7 @@ export const validSMTPConfig = MailModule.forRoot({
   },
 });
 
-// ✅ VALID: Correct SES configuration
+// VALID: Correct SES configuration
 export const validSESConfig = MailModule.forRoot({
   transport: {
     type: TransportType.SES,
@@ -195,7 +195,7 @@ export const validSESConfig = MailModule.forRoot({
   },
 });
 
-// ✅ VALID: Correct Mailgun configuration
+// VALID: Correct Mailgun configuration
 export const validMailgunConfig = MailModule.forRoot({
   transport: {
     type: TransportType.MAILGUN,

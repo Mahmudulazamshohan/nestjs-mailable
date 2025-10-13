@@ -346,8 +346,8 @@ export class ConditionalEmail extends Mailable {
   }
 
   envelope(): MailableEnvelope {
-    const subject = this.isPremium 
-      ? `✨ Premium Member - Welcome ${this.user.name}!`
+    const subject = this.isPremium
+      ? `Premium Member - Welcome ${this.user.name}!`
       : `Welcome ${this.user.name}!`;
 
     return {

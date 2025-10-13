@@ -24,16 +24,30 @@ const getTransportConfig = () => {
   const transportType = process.env.MAIL_TRANSPORT?.toLowerCase() || 'smtp';
 
   switch (transportType) {
-    case 'ses':
-      return {
+    case 'ses': {
+      const region = process.env.SES_REGION || 'us-east-1';
+      const sesConfig: any = {
         type: TransportType.SES,
-        endpoint: process.env.SES_ENDPOINT || 'http://localhost:4566',
-        region: process.env.SES_REGION || 'us-east-1',
+        region: region,
+        host: process.env.MAIL_HOST || `email-smtp.${region}.amazonaws.com`,
+        port: parseInt(process.env.MAIL_PORT || '587'),
+        secure: process.env.MAIL_SECURE === 'true',
         credentials: {
-          accessKeyId: process.env.SES_ACCESS_KEY_ID || 'test',
-          secretAccessKey: process.env.SES_SECRET_ACCESS_KEY || 'test',
+          user: process.env.MAIL_USERNAME,
+          pass: process.env.MAIL_PASSWORD,
         },
       };
+
+      // Only set endpoint if explicitly provided (for LocalStack/mock)
+      if (process.env.SES_ENDPOINT) {
+        sesConfig.endpoint = process.env.SES_ENDPOINT;
+      } else if (!process.env.AWS_PROFILE && sesConfig.credentials.accessKeyId === 'test') {
+        // If no AWS profile and using default test credentials, assume LocalStack
+        sesConfig.endpoint = 'http://localhost:4566';
+      }
+
+      return sesConfig;
+    }
     case 'mailgun':
       return {
         type: TransportType.MAILGUN,

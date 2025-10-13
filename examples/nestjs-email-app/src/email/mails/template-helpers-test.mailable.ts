@@ -29,7 +29,7 @@ export class TemplateHelpersTestMailable extends Mailable {
 
   envelope(): MailableEnvelope {
     return {
-      subject: '🧪 Template Helper Functions Test - NestJS Mailable',
+      subject: 'Template Helper Functions Test - NestJS Mailable',
       tags: ['template-test', 'helpers', 'handlebars'],
       metadata: {
         orderId: this.data.orderId,
