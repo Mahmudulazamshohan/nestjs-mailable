@@ -145,17 +145,42 @@ Perfect for most email providers like Gmail, Outlook, or custom SMTP servers.
 
 For high-volume email sending with AWS Simple Email Service.
 
+The SES transport automatically uses the appropriate method based on your environment:
+- **Production AWS SES**: Uses nodemailer with SMTP credentials (`email-smtp.{region}.amazonaws.com:587`)
+- **LocalStack/Mock**: Uses AWS SDK when endpoint contains `localhost`, `127.0.0.1`, or `4566`
+
+#### Production AWS SES (Recommended)
+
 ```typescript
 {
   transport: {
     type: TransportType.SES,
     region: 'us-east-1',
+    host: 'email-smtp.us-east-1.amazonaws.com', // Optional: auto-generated if not provided
+    port: 587, // Optional: defaults to 587
+    secure: false, // Optional: defaults to false
     credentials: {
-      accessKeyId: 'your-access-key',
-      secretAccessKey: 'your-secret-key'
-    },
-    // Optional: Custom SES endpoint (for LocalStack)
-    endpoint: 'http://localhost:4566'
+      user: process.env.MAIL_USERNAME, // SES SMTP username
+      pass: process.env.MAIL_PASSWORD, // SES SMTP password
+    }
+  }
+}
+```
+
+> **Note**: For production AWS SES, use SMTP credentials (`user` and `pass`) obtained from IAM user with SES sending permissions. The transport uses nodemailer SMTP which connects to `email-smtp.{region}.amazonaws.com:587` with TLS.
+
+#### LocalStack/Mock Development
+
+```typescript
+{
+  transport: {
+    type: TransportType.SES,
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4566', // Triggers AWS SDK mode
+    credentials: {
+      accessKeyId: 'test',
+      secretAccessKey: 'test'
+    }
   }
 }
 ```
@@ -247,9 +272,12 @@ MAIL_FROM_NAME="Your App Name"
 TEMPLATE_ENGINE=handlebars
 
 # SES Configuration (if using SES)
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_DEFAULT_REGION=us-east-1
+SES_REGION=us-east-1
+MAIL_HOST=email-smtp.us-east-1.amazonaws.com
+MAIL_PORT=587
+MAIL_USERNAME=your-ses-smtp-username
+MAIL_PASSWORD=your-ses-smtp-password
+MAIL_SECURE=false
 
 # Mailgun Configuration (if using Mailgun)
 MAILGUN_DOMAIN=your-domain.com

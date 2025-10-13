@@ -6,7 +6,7 @@ import { createSMTPConfig, createSESConfig, createMailgunConfig } from '../../..
  * These examples will show compile-time errors for missing required fields
  */
 
-// ✅ CORRECT: SMTP Configuration with all required fields
+// CORRECT: SMTP Configuration with all required fields
 const correctSMTPConfig = createSMTPConfig({
   host: 'smtp.gmail.com',
   auth: {
@@ -17,11 +17,11 @@ const correctSMTPConfig = createSMTPConfig({
   secure: false,
 });
 
-// ❌ INCORRECT: SMTP Configuration missing required 'host' field
+// INCORRECT: SMTP Configuration missing required 'host' field
 // Uncomment the following to see TypeScript error:
 /*
 const incorrectSMTPConfig = createSMTPConfig({
-  // host: 'smtp.gmail.com', // ❌ Missing required field
+  // host: 'smtp.gmail.com', // Missing required field
   auth: {
     user: 'user@gmail.com',
     pass: 'password',
@@ -29,19 +29,19 @@ const incorrectSMTPConfig = createSMTPConfig({
 });
 */
 
-// ❌ INCORRECT: SMTP Configuration missing required 'auth.user' field
+// INCORRECT: SMTP Configuration missing required 'auth.user' field
 // Uncomment the following to see TypeScript error:
 /*
 const incorrectSMTPAuthConfig = createSMTPConfig({
   host: 'smtp.gmail.com',
   auth: {
-    // user: 'user@gmail.com', // ❌ Missing required field
+    // user: 'user@gmail.com', // Missing required field
     pass: 'password',
   },
 });
 */
 
-// ✅ CORRECT: SES Configuration with all required fields
+// CORRECT: SES Configuration with all required fields
 const correctSESConfig = createSESConfig({
   region: 'us-east-1',
   credentials: {
@@ -51,11 +51,11 @@ const correctSESConfig = createSESConfig({
   endpoint: 'https://email.us-east-1.amazonaws.com',
 });
 
-// ❌ INCORRECT: SES Configuration missing required 'region' field
+// INCORRECT: SES Configuration missing required 'region' field
 // Uncomment the following to see TypeScript error:
 /*
 const incorrectSESConfig = createSESConfig({
-  // region: 'us-east-1', // ❌ Missing required field
+  // region: 'us-east-1', // Missing required field
   credentials: {
     accessKeyId: 'your-access-key',
     secretAccessKey: 'your-secret-key',
@@ -63,19 +63,19 @@ const incorrectSESConfig = createSESConfig({
 });
 */
 
-// ❌ INCORRECT: SES Configuration missing required 'credentials.accessKeyId' field
+// INCORRECT: SES Configuration missing required 'credentials.accessKeyId' field
 // Uncomment the following to see TypeScript error:
 /*
 const incorrectSESCredentialsConfig = createSESConfig({
   region: 'us-east-1',
   credentials: {
-    // accessKeyId: 'your-access-key', // ❌ Missing required field
+    // accessKeyId: 'your-access-key', // Missing required field
     secretAccessKey: 'your-secret-key',
   },
 });
 */
 
-// ✅ CORRECT: Mailgun Configuration with all required fields
+// CORRECT: Mailgun Configuration with all required fields
 const correctMailgunConfig = createMailgunConfig({
   domain: 'mg.yourdomain.com',
   apiKey: 'your-mailgun-api-key',
@@ -83,25 +83,25 @@ const correctMailgunConfig = createMailgunConfig({
   timeout: 5000,
 });
 
-// ❌ INCORRECT: Mailgun Configuration missing required 'domain' field
+// INCORRECT: Mailgun Configuration missing required 'domain' field
 // Uncomment the following to see TypeScript error:
 /*
 const incorrectMailgunConfig = createMailgunConfig({
-  // domain: 'mg.yourdomain.com', // ❌ Missing required field
+  // domain: 'mg.yourdomain.com', // Missing required field
   apiKey: 'your-mailgun-api-key',
 });
 */
 
-// ❌ INCORRECT: Mailgun Configuration missing required 'apiKey' field
+// INCORRECT: Mailgun Configuration missing required 'apiKey' field
 // Uncomment the following to see TypeScript error:
 /*
 const incorrectMailgunApiConfig = createMailgunConfig({
   domain: 'mg.yourdomain.com',
-  // apiKey: 'your-mailgun-api-key', // ❌ Missing required field
+  // apiKey: 'your-mailgun-api-key', // Missing required field
 });
 */
 
-// ✅ CORRECT: Module configuration examples with type checking
+// CORRECT: Module configuration examples with type checking
 export class TypeSafeConfigExamples {
   // SMTP Module Configuration
   static getSMTPModule() {
@@ -139,15 +139,15 @@ export class TypeSafeConfigExamples {
     });
   }
 
-  // ❌ INCORRECT: Direct configuration with wrong transport type
+  // INCORRECT: Direct configuration with wrong transport type
   // Uncomment the following to see TypeScript error:
   /*
   static getIncorrectModule() {
     return MailModule.forRoot({
       transport: {
         type: TransportType.SES,
-        // ❌ TypeScript error: Missing required 'region' and 'credentials' for SES
-        host: 'smtp.gmail.com', // ❌ Invalid field for SES transport
+        // TypeScript error: Missing required 'region' and 'credentials' for SES
+        host: 'smtp.gmail.com', // Invalid field for SES transport
       },
       from: { address: 'noreply@yourapp.com', name: 'Your App' },
     });

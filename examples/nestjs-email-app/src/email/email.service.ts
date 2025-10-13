@@ -34,7 +34,7 @@ export class EmailService {
           body: JSON.stringify(emailRecord),
         });
       } catch (viewerError) {
-        console.log('📧 Email viewer service not available, saved locally only');
+        console.log('Email viewer service not available, saved locally only');
       }
     } catch (error) {
       console.error('Failed to save email for viewer:', error);
@@ -187,7 +187,7 @@ export class EmailService {
 
       // Save email content for viewer
       await this.saveEmailForViewer({
-        subject: 'Your Order Has Shipped! 📦',
+        subject: 'Your Order Has Shipped!',
         from: 'noreply@yourapp.com',
         to: 'test@example.com',
         cc: 'test@yourapp.com',
@@ -202,9 +202,9 @@ export class EmailService {
 
       return {
         success: true,
-        message: '🎉 Test email sent successfully!',
+        message: 'Test email sent successfully!',
         mailer,
-        emailSubject: 'Your Order Has Shipped! 📦',
+        emailSubject: 'Your Order Has Shipped!',
         templateFile: 'mail/orders/shipped',
         result,
         orderDetails: {

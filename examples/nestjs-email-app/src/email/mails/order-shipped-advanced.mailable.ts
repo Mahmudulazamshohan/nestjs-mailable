@@ -26,7 +26,7 @@ export class OrderShippedAdvanced extends Mailable {
    */
   envelope(): MailableEnvelope {
     return {
-      subject: `Your Order Has Shipped! 📦`,
+      subject: `Your Order Has Shipped!`,
       tags: ['shipment'],
       metadata: {
         order_id: this.order.id,

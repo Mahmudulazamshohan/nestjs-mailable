@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🚀 NestJS Mailable</h1>
+  <h1>NestJS Mailable</h1>
   <p>Advanced mailable classes for NestJS with fluent API, multiple transports, and comprehensive template support</p>
 </div>
 
@@ -13,17 +13,17 @@
 
 </div>
 
-## ✨ Features
+## Features
 
-- 🎯 **Advanced Mailable Classes** - Organized, reusable email components
-- 🔗 **Fluent API** - Clean, chainable interface for sending emails
-- 📧 **Multiple Transports** - SMTP, Amazon SES, Mailgun support
-- 🎨 **Template Engines** - Handlebars, EJS, Pug with auto-detection
-- 📎 **Attachment Builder** - Flexible file attachment handling
-- ⚙️ **Easy Configuration** - Simple setup with TypeScript support
-- 🧪 **Testing Ready** - Built-in testing utilities
+- **Advanced Mailable Classes** - Organized, reusable email components
+- **Fluent API** - Clean, chainable interface for sending emails
+- **Multiple Transports** - SMTP, Amazon SES, Mailgun support
+- **Template Engines** - Handlebars, EJS, Pug with auto-detection
+- **Attachment Builder** - Flexible file attachment handling
+- **Easy Configuration** - Simple setup with TypeScript support
+- **Testing Ready** - Built-in testing utilities
 
-## 📦 Installation
+## Installation
 
 ### Basic Installation
 ```bash
@@ -46,14 +46,16 @@ npm install nestjs-mailable nodemailer pug
 
 #### Amazon SES Transport
 ```bash
-# With Handlebars
-npm install nestjs-mailable aws-sdk handlebars
+# With Handlebars (Production AWS SES uses nodemailer SMTP)
+npm install nestjs-mailable nodemailer aws-sdk handlebars
 
 # With EJS
-npm install nestjs-mailable aws-sdk ejs
+npm install nestjs-mailable nodemailer aws-sdk ejs
 
 # With Pug
-npm install nestjs-mailable aws-sdk pug
+npm install nestjs-mailable nodemailer aws-sdk pug
+
+# Note: aws-sdk is required for LocalStack development, nodemailer for production
 ```
 
 #### Mailgun Transport
@@ -74,7 +76,7 @@ npm install nestjs-mailable mailgun.js pug
 npm install nestjs-mailable nodemailer aws-sdk mailgun.js handlebars ejs pug
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Module Setup
 
@@ -129,7 +131,7 @@ export class NotificationService {
 }
 ```
 
-## 📧 Mailable Classes
+## Mailable Classes
 
 ### Simple Mailable
 
@@ -208,7 +210,7 @@ await this.mailService
   .send(new OrderShippedMail(order));
 ```
 
-## 🔧 Configuration Examples
+## Configuration Examples
 
 ### Environment-based Configuration
 
@@ -248,14 +250,22 @@ export class AppModule {}
 
 ### Amazon SES Configuration
 
+The SES transport automatically uses the appropriate method based on your environment:
+- **Production AWS SES**: Uses nodemailer with SMTP credentials (`email-smtp.{region}.amazonaws.com:587`)
+- **LocalStack/Mock**: Uses AWS SDK when endpoint contains `localhost`, `127.0.0.1`, or `4566`
+
+#### Production AWS SES (Recommended)
 ```typescript
 MailModule.forRoot({
   transport: {
     type: TransportType.SES,
     region: 'us-east-1',
+    host: process.env.MAIL_HOST || 'email-smtp.us-east-1.amazonaws.com',
+    port: parseInt(process.env.MAIL_PORT || '587'),
+    secure: process.env.MAIL_SECURE === 'true',
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      user: process.env.MAIL_USERNAME,
+      pass: process.env.MAIL_PASSWORD,
     },
   },
   from: { address: 'noreply@yourapp.com', name: 'Your App' },
@@ -263,6 +273,24 @@ MailModule.forRoot({
     engine: TEMPLATE_ENGINE.HANDLEBARS,
     directory: './templates',
   },
+})
+```
+
+> **Note**: For production AWS SES, use SMTP credentials (`user` and `pass`) obtained from IAM user with SES sending permissions. The transport uses nodemailer SMTP which connects to `email-smtp.{region}.amazonaws.com:587` with TLS.
+
+#### LocalStack/Mock Development
+```typescript
+MailModule.forRoot({
+  transport: {
+    type: TransportType.SES,
+    region: 'us-east-1',
+    endpoint: 'http://localhost:4566', // For LocalStack
+    credentials: {
+      accessKeyId: 'test',
+      secretAccessKey: 'test',
+    },
+  },
+  from: { address: 'test@example.com', name: 'Test App' },
 })
 ```
 
@@ -289,7 +317,7 @@ MailModule.forRoot({
 })
 ```
 
-## 🧪 Development & Testing
+## Development & Testing
 
 ### Mock Servers for Development
 
@@ -364,36 +392,36 @@ curl http://localhost:4566/emails
 curl http://localhost:3001/emails/EMAIL_ID
 ```
 
-## 📚 Documentation
+## Documentation
 
-**📖 [Full Documentation](https://mahmudulazamshohan.github.io/nestjs-mailable)** - Comprehensive guides, API reference, and examples
+**[Full Documentation](https://mahmudulazamshohan.github.io/nestjs-mailable)** - Comprehensive guides, API reference, and examples
 
-## 🛠 Supported Transports
+## Supported Transports
 
 | Transport | Description | Status |
 |-----------|-------------|--------|
-| **SMTP** | Standard SMTP servers | ✅ |
-| **Amazon SES** | AWS Simple Email Service | ✅ |
-| **Mailgun** | Mailgun API | ✅ |
+| **SMTP** | Standard SMTP servers | Yes |
+| **Amazon SES** | AWS Simple Email Service | Yes |
+| **Mailgun** | Mailgun API | Yes |
 
-## 🎨 Template Engines
+## Template Engines
 
 | Engine | Extension | Helper Support | Partials |
 |--------|-----------|----------------|----------|
-| **Handlebars** | `.hbs` | ✅ | ✅ |
-| **EJS** | `.ejs` | ⚠️ | ✅ |
-| **Pug** | `.pug` | ⚠️ | ✅ |
+| **Handlebars** | `.hbs` | Yes | Yes |
+| **EJS** | `.ejs` | Partial | Yes |
+| **Pug** | `.pug` | Partial | Yes |
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
 
-## 📄 License
+## License
 
 MIT © [NestJS Mailable](https://github.com/Mahmudulazamshohan/nestjs-mailable)
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ for the NestJS community</sub>
+  <sub>Built for the NestJS community</sub>
 </div>

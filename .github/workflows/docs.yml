@@ -1,7 +1,13 @@
 name: Deploy Documentation
 
 on:
-  # Runs on releases
+  # Runs on pushes to main branch when docs folder changes
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+  
+  # Runs on releases when docs folder changes
   release:
     types: [published]
   

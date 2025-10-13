@@ -1,5 +1,6 @@
 import { MailTransport, Content } from '../interfaces/mail.interface';
 import { Transporter } from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import { SES } from 'aws-sdk';
 
 export class SesTransport implements MailTransport {
@@ -8,24 +9,52 @@ export class SesTransport implements MailTransport {
 
   constructor(private options: Record<string, unknown>) {
     // Validate required options
-    if (!options.region || !options.credentials) {
-      throw new Error('SES transport requires region and credentials configuration');
+    if (!options.region) {
+      throw new Error('SES transport requires region configuration');
     }
 
-    // Configure AWS SES
-    this.ses = new SES({
-      endpoint: options.endpoint as string,
-      region: options.region as string,
-      accessKeyId: (options.credentials as any)?.accessKeyId,
-      secretAccessKey: (options.credentials as any)?.secretAccessKey,
-      sessionToken: (options.credentials as any)?.sessionToken,
-    });
-
-    // Only create transporter for real AWS SES (not mock server)
     const endpoint = options.endpoint as string;
-    if (!endpoint || endpoint.includes('amazonaws.com')) {
-      // For real AWS SES, we can use nodemailer with aws-sdk
-      // But we'll skip this for mock server testing
+    const isLocalEndpoint =
+      endpoint && (endpoint.includes('localhost') || endpoint.includes('127.0.0.1') || endpoint.includes('4566'));
+
+    // For real AWS SES, use nodemailer with SMTP
+    if (!isLocalEndpoint) {
+      const region = options.region as string;
+      const creds = options.credentials as any;
+
+      // Get SMTP configuration from options
+      const host = (options.host as string) || `email-smtp.${region}.amazonaws.com`;
+      const port = (options.port as number) || 587;
+      const secure = (options.secure as boolean) || false;
+      const username = creds?.user || creds?.accessKeyId;
+      const password = creds?.pass || creds?.secretAccessKey;
+
+      this.transporter = nodemailer.createTransport({
+        host: host,
+        port: port,
+        secure: secure,
+        auth: {
+          user: username,
+          pass: password,
+        },
+      });
+    } else {
+      // For LocalStack/mock, use AWS SDK
+      const sesConfig: any = {
+        endpoint: endpoint,
+        region: options.region as string,
+      };
+
+      if (options.credentials) {
+        const creds = options.credentials as any;
+        if (creds.accessKeyId && creds.accessKeyId !== 'test') {
+          sesConfig.accessKeyId = creds.accessKeyId;
+          sesConfig.secretAccessKey = creds.secretAccessKey;
+          sesConfig.sessionToken = creds.sessionToken;
+        }
+      }
+
+      this.ses = new SES(sesConfig);
     }
   }
 
@@ -36,11 +65,104 @@ export class SesTransport implements MailTransport {
         throw new Error('Recipient address (to) is required');
       }
 
+      // Use nodemailer transporter if available (real AWS SES via SMTP)
+      if (this.transporter) {
+        const mailOptions = {
+          from: content.from ? this.formatSingleAddress(content.from) : undefined,
+          to: this.formatAddresses(content.to),
+          cc: this.formatAddresses(content.cc),
+          bcc: this.formatAddresses(content.bcc),
+          replyTo: this.formatAddresses(content.replyTo),
+          subject: content.subject,
+          text: content.text,
+          html: content.html,
+          attachments: content.attachments,
+          headers: content.headers,
+        };
+
+        // Remove undefined fields
+        Object.keys(mailOptions).forEach((key) => {
+          const value = mailOptions[key as keyof typeof mailOptions];
+          if (value === undefined || value === '') {
+            delete mailOptions[key as keyof typeof mailOptions];
+          }
+        });
+
+        const result = await this.transporter.sendMail(mailOptions);
+
+        return result;
+      }
+
+      // Otherwise use AWS SDK for LocalStack/mock
+      const endpoint = this.options.endpoint as string;
+      const isLocalEndpoint =
+        endpoint && (endpoint.includes('localhost') || endpoint.includes('127.0.0.1') || endpoint.includes('4566'));
+
+      if (isLocalEndpoint) {
+        // Build email parameters for AWS SES
+        const destination: any = {
+          ToAddresses: Array.isArray(content.to)
+            ? content.to.map((t: any) => (typeof t === 'string' ? t : t.address))
+            : [typeof content.to === 'string' ? content.to : (content.to as any).address],
+        };
+
+        if (content.cc) {
+          destination.CcAddresses = Array.isArray(content.cc)
+            ? content.cc.map((c: any) => (typeof c === 'string' ? c : c.address))
+            : [typeof content.cc === 'string' ? content.cc : (content.cc as any).address];
+        }
+
+        if (content.bcc) {
+          destination.BccAddresses = Array.isArray(content.bcc)
+            ? content.bcc.map((b: any) => (typeof b === 'string' ? b : b.address))
+            : [typeof content.bcc === 'string' ? content.bcc : (content.bcc as any).address];
+        }
+
+        const params = {
+          Source: content.from ? this.formatSingleAddress(content.from) : undefined,
+          Destination: destination,
+          Message: {
+            Subject: {
+              Data: content.subject || 'No Subject',
+              Charset: 'UTF-8',
+            },
+            Body: {} as any,
+          },
+        };
+
+        if (content.html) {
+          params.Message.Body.Html = {
+            Data: content.html,
+            Charset: 'UTF-8',
+          };
+        }
+
+        if (content.text) {
+          params.Message.Body.Text = {
+            Data: content.text,
+            Charset: 'UTF-8',
+          };
+        }
+
+        // Send using AWS SDK
+        const result = await this.ses.sendEmail(params).promise();
+
+        return {
+          messageId: result.MessageId,
+          accepted: destination.ToAddresses,
+          rejected: [],
+          response: '250 OK',
+          envelope: {
+            from: params.Source,
+            to: destination.ToAddresses,
+          },
+        };
+      }
+
       // For mock server testing, create a raw email message
       const emailMessage = this.createRawEmail(content);
 
       // Send directly to our SES mock server
-      const endpoint = this.options.endpoint as string;
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -67,39 +189,7 @@ export class SesTransport implements MailTransport {
         },
       };
     } catch (error) {
-      // If direct SES call fails, and we have a real AWS transporter, fall back to nodemailer
-      if (this.transporter) {
-        try {
-          const mailOptions = {
-            from: content.from ? this.formatSingleAddress(content.from) : undefined,
-            to: this.formatAddresses(content.to),
-            cc: this.formatAddresses(content.cc),
-            bcc: this.formatAddresses(content.bcc),
-            replyTo: this.formatAddresses(content.replyTo),
-            subject: content.subject,
-            text: content.text,
-            html: content.html,
-            attachments: content.attachments,
-            headers: content.headers,
-          };
-
-          // Remove undefined fields
-          Object.keys(mailOptions).forEach((key) => {
-            const value = mailOptions[key as keyof typeof mailOptions];
-            if (value === undefined || value === '') {
-              delete mailOptions[key as keyof typeof mailOptions];
-            }
-          });
-
-          return await this.transporter.sendMail(mailOptions);
-        } catch (fallbackError) {
-          throw new Error(
-            `SES send failed: ${(error as Error).message} (fallback: ${(fallbackError as Error).message})`,
-          );
-        }
-      } else {
-        throw new Error(`SES send failed: ${(error as Error).message}`);
-      }
+      throw new Error(`SES send failed: ${(error as Error).message}`);
     }
   }
 
