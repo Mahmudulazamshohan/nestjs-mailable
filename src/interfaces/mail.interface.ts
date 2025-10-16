@@ -25,9 +25,14 @@ export interface SMTPTransportConfiguration {
 export interface SESTransportConfiguration {
   type: typeof TransportType.SES;
   region: string;
+  host?: string;
+  port?: number;
+  secure?: boolean;
   credentials: {
-    accessKeyId: string;
-    secretAccessKey: string;
+    user?: string;
+    pass?: string;
+    accessKeyId?: string;
+    secretAccessKey?: string;
     sessionToken?: string;
   };
   endpoint?: string;
@@ -38,11 +43,17 @@ export interface MailgunTransportConfiguration {
   options: MailgunOptions;
 }
 
+export interface ResendTransportConfiguration {
+  type: typeof TransportType.RESEND;
+  apiKey: string;
+}
+
 // Union type that enforces transport-specific required fields
 export type TransportConfiguration =
   | SMTPTransportConfiguration
   | SESTransportConfiguration
-  | MailgunTransportConfiguration;
+  | MailgunTransportConfiguration
+  | ResendTransportConfiguration;
 
 export interface MailgunOptions {
   domain: string;

@@ -17,7 +17,7 @@
 
 - **Advanced Mailable Classes** - Organized, reusable email components
 - **Fluent API** - Clean, chainable interface for sending emails
-- **Multiple Transports** - SMTP, Amazon SES, Mailgun support
+- **Multiple Transports** - SMTP, Amazon SES, Mailgun, Resend support
 - **Template Engines** - Handlebars, EJS, Pug with auto-detection
 - **Attachment Builder** - Flexible file attachment handling
 - **Easy Configuration** - Simple setup with TypeScript support
@@ -70,10 +70,22 @@ npm install nestjs-mailable mailgun.js ejs
 npm install nestjs-mailable mailgun.js pug
 ```
 
+#### Resend Transport
+```bash
+# With Handlebars
+npm install nestjs-mailable resend handlebars
+
+# With EJS
+npm install nestjs-mailable resend ejs
+
+# With Pug
+npm install nestjs-mailable resend pug
+```
+
 ### All-in-One Installation
 ```bash
 # Install with all transports and template engines
-npm install nestjs-mailable nodemailer aws-sdk mailgun.js handlebars ejs pug
+npm install nestjs-mailable nodemailer aws-sdk mailgun.js resend handlebars ejs pug
 ```
 
 ## Quick Start
@@ -294,6 +306,26 @@ MailModule.forRoot({
 })
 ```
 
+### Resend Configuration
+
+Resend offers a simple, modern API for email delivery with excellent deliverability.
+
+```typescript
+MailModule.forRoot({
+  transport: {
+    type: TransportType.RESEND,
+    apiKey: process.env.RESEND_API_KEY,
+  },
+  from: { address: 'noreply@yourapp.com', name: 'Your App' },
+  templates: {
+    engine: TEMPLATE_ENGINE.HANDLEBARS,
+    directory: './templates',
+  },
+})
+```
+
+> **Note**: For Resend, you'll need to verify your domain at [resend.com/domains](https://resend.com/domains) and use a from address with that verified domain in production. In test mode, you can only send to your own verified email.
+
 ### Handlebars with Custom Helpers
 
 ```typescript
@@ -403,6 +435,7 @@ curl http://localhost:3001/emails/EMAIL_ID
 | **SMTP** | Standard SMTP servers | Yes |
 | **Amazon SES** | AWS Simple Email Service | Yes |
 | **Mailgun** | Mailgun API | Yes |
+| **Resend** | Resend API | Yes |
 
 ## Template Engines
 
