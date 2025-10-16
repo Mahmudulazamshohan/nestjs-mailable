@@ -202,6 +202,26 @@ For transactional emails with Mailgun's reliable delivery.
 }
 ```
 
+### Resend Transport
+
+For modern, developer-friendly email delivery with excellent deliverability.
+
+```typescript
+{
+  transport: {
+    type: TransportType.RESEND,
+    apiKey: process.env.RESEND_API_KEY
+  }
+}
+```
+
+**Environment Variables:**
+```bash
+RESEND_API_KEY=re_xxxxxxxxx
+```
+
+> **Note**: Resend requires domain verification. In test mode, you can only send to your own verified email. For production, verify your domain at [resend.com/domains](https://resend.com/domains) and use a from address with that verified domain.
+
 ## Single Transport Configuration (v1.1+)
 
 The new v1.1+ configuration format focuses on single transport per module instance:
@@ -282,6 +302,9 @@ MAIL_SECURE=false
 # Mailgun Configuration (if using Mailgun)
 MAILGUN_DOMAIN=your-domain.com
 MAILGUN_SECRET=your-mailgun-api-key
+
+# Resend Configuration (if using Resend)
+RESEND_API_KEY=re_xxxxxxxxx
 ```
 
 ## Template Configuration
