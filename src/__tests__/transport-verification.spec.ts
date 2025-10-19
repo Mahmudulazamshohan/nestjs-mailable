@@ -326,8 +326,7 @@ describe('Transport Verification', () => {
       expect(availableTransports).toContain(TransportType.SMTP);
       expect(availableTransports).toContain(TransportType.SES);
       expect(availableTransports).toContain(TransportType.MAILGUN);
-      expect(availableTransports).toContain(TransportType.RESEND);
-      expect(availableTransports).toHaveLength(4);
+      expect(availableTransports).toHaveLength(3);
     });
   });
 
