@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Getting Started
 
-NestJS Mailable is a simple and powerful email package for NestJS applications. Send emails using multiple transports (SMTP, SES, Mailgun, Resend) with template support and easy testing.
+NestJS Mailable is a simple and powerful email package for NestJS applications. Send emails using multiple transports (SMTP, SES, Mailgun) with template support and easy testing.
 
 ## Quick Start
 
@@ -124,9 +124,9 @@ await this.mailService.to(user.email).send(new WelcomeMail(user));
 
 ## Features
 
-- **Multiple Transports**: SMTP, Amazon SES, Mailgun, Resend
+- **Multiple Transports**: SMTP, Amazon SES, Mailgun
 - **Template Engines**: Handlebars, EJS, Pug
-- **Advanced Mailable Classes**: Organized and reusable email components
+- **Advanced Mailable Classes**: Organized and reusable email components  
 - **Fluent API**: Chain methods for complex emails
 - **Testing Support**: Built-in fake mailer for testing
 - **Attachments**: File, data, and storage attachments

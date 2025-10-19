@@ -3,7 +3,6 @@ import { MailTransport, TransportConfiguration } from '../interfaces/mail.interf
 import { SmtpTransport } from '../transports/smtp.transport';
 import { SesTransport } from '../transports/ses.transport';
 import { MailgunTransport } from '../transports/mailgun.transport';
-import { ResendTransport } from '../transports/resend.transport';
 import { TransportType } from '../types/transport.type';
 
 // Factory Pattern Implementation
@@ -39,12 +38,8 @@ export class MailTransportFactory {
           transport: 'mailgun',
           options: config.options,
         });
-      case TransportType.RESEND:
-        // TypeScript ensures config has apiKey as required
-        return new ResendTransport(config.apiKey);
       default: {
         // TypeScript will catch this at compile time if we miss any transport types
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         throw new Error(`Unsupported transport type: ${(config as any).type || 'unknown'}`);
       }
     }
@@ -56,6 +51,6 @@ export class MailTransportFactory {
 
   // Transport Strategy Pattern
   getAvailableTransports(): TransportType[] {
-    return [TransportType.SMTP, TransportType.SES, TransportType.MAILGUN, TransportType.RESEND];
+    return [TransportType.SMTP, TransportType.SES, TransportType.MAILGUN];
   }
 }
