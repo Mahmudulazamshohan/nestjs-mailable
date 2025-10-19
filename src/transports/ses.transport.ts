@@ -241,8 +241,9 @@ export class SesTransport implements MailTransport {
       }
 
       return true; // Assume AWS SES is available
-    } catch (error) {
-      console.warn(`SES verification failed: ${(error as Error).message}`);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      // SES verification failed - return false
       return false;
     }
   }

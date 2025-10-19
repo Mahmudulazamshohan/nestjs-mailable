@@ -1,6 +1,6 @@
 {
   "name": "nestjs-mailable",
-  "version": "1.6.1",
+  "version": "1.7.1",
   "description": "A comprehensive NestJS mail package with design patterns for email handling, templating, and multi-provider support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,7 +32,6 @@
     "lint:fix:core": "eslint src/**/*.ts --fix",
     "format:core": "prettier --write \"src/**/*.ts\"",
     "prepublishOnly": "yarn run build:core",
-    "prepare": "husky install",
     "release": "semantic-release"
   },
   "keywords": [
@@ -92,11 +91,11 @@
     "@nestjs/core": "^11.1.6",
     "@nestjs/testing": "^11.1.6",
     "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.0",
-    "@semantic-release/npm": "^12.0.1",
-    "@semantic-release/release-notes-generator": "^14.0.1",
+    "@semantic-release/github": "^12.0.0",
+    "@semantic-release/npm": "^13.1.1",
+    "@semantic-release/release-notes-generator": "^14.1.0",
     "@types/handlebars": "^4.1.0",
     "@types/html-to-text": "^9.0.4",
     "@types/jest": "^29.5.8",
@@ -113,7 +112,7 @@
     "reflect-metadata": "^0.2.2",
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
-    "semantic-release": "^24.2.0",
+    "semantic-release": "^25.0.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.7.0"
   },

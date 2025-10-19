@@ -7,8 +7,9 @@ let ejs: any;
 
 try {
   ejs = ensurePackageAvailable('ejs');
-} catch (error) {
-  console.warn('EJS not available:', (error as Error).message);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+} catch (_error) {
+  // EJS not available - error will be thrown in constructor
 }
 
 @Injectable()
