@@ -26,11 +26,7 @@ jobs:
           cat > ~/.npmrc << EOF
           registry=https://registry.npmjs.org
           //registry.npmjs.org/:_authToken=${NPM_TOKEN}
-          //registry.npmjs.org/:always-auth=true
           EOF
-          npm config set registry 'https://registry.npmjs.org'
-          npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
-          npm config set '//registry.npmjs.org/:always-auth' true
         env:
           NPM_TOKEN: ${{ secrets.NPMTOKEN }}
       - name: Setup Yarn
@@ -52,6 +48,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
           NPM_TOKEN: ${{ secrets.NPMTOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPMTOKEN }}
-          npm_config_//registry.npmjs.org/:_authToken: ${{ secrets.NPMTOKEN }}
-          npm_config_//registry.npmjs.org/:always-auth: 'true'
-          npm_config_registry: 'https://registry.npmjs.org'
