@@ -96,18 +96,13 @@ export class MailgunTransport implements MailTransport {
 
     const url = `${this.mockConfig!.protocol}//${this.mockConfig!.host}/v3/${this.domain}/messages`;
 
-    try {
-      const response = await axios.post(url, form, {
-        headers: {
-          ...form.getHeaders(),
-          Authorization: `Basic ${Buffer.from(`api:${this.config.options.apiKey}`).toString('base64')}`,
-        },
-      });
+    const response = await axios.post(url, form, {
+      headers: {
+        ...form.getHeaders(),
+        Authorization: `Basic ${Buffer.from(`api:${this.config.options.apiKey}`).toString('base64')}`,
+      },
+    });
 
-      return response.data;
-    } catch (error) {
-      console.error('Failed to send email via Mailgun mock server:', error);
-      throw error;
-    }
+    return response.data;
   }
 }

@@ -7,8 +7,9 @@ let pug: any;
 
 try {
   pug = ensurePackageAvailable('pug');
-} catch (error) {
-  console.warn('Pug not available:', (error as Error).message);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+} catch (_error) {
+  // Pug not available - error will be thrown in constructor
 }
 
 @Injectable()

@@ -58,8 +58,9 @@ export class SmtpTransport implements MailTransport {
     try {
       const result = await this.transporter.verify();
       return result;
-    } catch (error) {
-      console.warn(`SMTP verification failed: ${(error as Error).message}`);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      // SMTP verification failed - return false
       return false;
     }
   }

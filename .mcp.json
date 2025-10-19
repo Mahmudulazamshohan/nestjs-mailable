@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "mcp-root": {
+      "command": "/Users/mahmudulazamshohan/Shohan/mcp-servers/mcp-root.sh",
+      "args": []
+    },
+    "kubernetes-readonly": {
+      "command": "npx",
+      "args": [
+        "mcp-server-kubernetes"
+      ],
+      "env": {
+        "ALLOW_ONLY_NON_DESTRUCTIVE_TOOLS": "true"
+      }
+    }
+  }
+}

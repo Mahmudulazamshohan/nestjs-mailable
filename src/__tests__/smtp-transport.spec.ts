@@ -305,15 +305,9 @@ describe('SmtpTransport', () => {
       const error = new Error('Connection failed');
       mockTransporter.verify.mockRejectedValue(error);
 
-      // Mock console.warn to avoid console output in tests
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
       const result = await transport.verify();
 
       expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith('SMTP verification failed: Connection failed');
-
-      consoleSpy.mockRestore();
     });
 
     it('should handle different types of verification errors', async () => {
@@ -324,18 +318,13 @@ describe('SmtpTransport', () => {
         { error: { message: 'Custom error' }, message: 'Custom error' },
       ];
 
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
       for (const testCase of testCases) {
         mockTransporter.verify.mockRejectedValue(testCase.error);
 
         const result = await transport.verify();
 
         expect(result).toBe(false);
-        expect(consoleSpy).toHaveBeenCalledWith(`SMTP verification failed: ${testCase.message}`);
       }
-
-      consoleSpy.mockRestore();
     });
   });
 
