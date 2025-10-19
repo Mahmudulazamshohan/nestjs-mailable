@@ -1,3 +1,12 @@
+## [1.7.2](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.7.1...v1.7.2) (2025-10-19)
+
+
+### Bug Fixes
+
+* remove invalid always-auth npm config causing CI failure ([4ae21ce](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/4ae21ce809c7284e2ffc56c1774b680462017491))
+* remove npm package-lock.json to resolve yarn frozen-lockfile conflict ([eccb8e0](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/eccb8e0090fa2128f4301b31e651c1316338d995))
+* update yarn.lock to resolve frozen-lockfile error in CI ([0599384](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/05993842ee86d88b7d890a809f6d5c1b318ffb7d))
+
 ## [1.7.1](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.7.0...v1.7.1) (2025-10-19)
 
 
