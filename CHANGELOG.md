@@ -1,3 +1,15 @@
+# [1.7.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.6.1...v1.7.0) (2025-10-19)
+
+
+### Bug Fixes
+
+* github actions ([#5](https://github.com/Mahmudulazamshohan/nestjs-mailable/issues/5)) ([49f729d](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/49f729dba69de2297dd0f36f7ea9f55f88691aa9))
+
+
+### Features
+
+* revert resend implementation ([#4](https://github.com/Mahmudulazamshohan/nestjs-mailable/issues/4)) ([9bde9d4](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/9bde9d497c052474930fa9ef69a3e308bcea9f92))
+
 ## [1.6.1](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.6.0...v1.6.1) (2025-10-16)
 
 
