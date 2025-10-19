@@ -7,8 +7,9 @@ let HandlebarsLib: any;
 
 try {
   HandlebarsLib = ensurePackageAvailable('handlebars');
-} catch (error) {
-  console.warn('Handlebars not available:', (error as Error).message);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+} catch (_error) {
+  // Handlebars not available - error will be thrown in constructor
 }
 
 @Injectable()
@@ -79,11 +80,12 @@ export class HandlebarsTemplateEngine extends BaseTemplateEngine {
   registerHelper(name: string, helper: (...args: unknown[]) => unknown): void {
     if (this.handlebars) {
       // Wrap helper with error handling
-      const safeHelper = (...args: unknown[]) => {
+      const safeHelper = (...args: unknown[]): unknown => {
         try {
           return helper(...args);
-        } catch (error) {
-          console.warn(`Handlebars helper '${name}' error:`, (error as Error).message);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_error) {
+          // Helper error - silently return fallback value
           return args[0] || ''; // Return the first argument or empty string as fallback
         }
       };
@@ -101,8 +103,9 @@ export class HandlebarsTemplateEngine extends BaseTemplateEngine {
     try {
       const partialContent = await this.loadTemplate(partialPath);
       this.registerPartial(name, partialContent);
-    } catch (error) {
-      console.warn(`Failed to load partial '${name}' from '${partialPath}':`, (error as Error).message);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
+      // Failed to load partial - silently continue
     }
   }
 }

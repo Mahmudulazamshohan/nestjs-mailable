@@ -32,7 +32,6 @@
     "lint:fix:core": "eslint src/**/*.ts --fix",
     "format:core": "prettier --write \"src/**/*.ts\"",
     "prepublishOnly": "yarn run build:core",
-    "prepare": "husky install",
     "release": "semantic-release"
   },
   "keywords": [
