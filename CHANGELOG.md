@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.7.3...v1.7.4) (2025-10-19)
+
+
+### Bug Fixes
+
+* release note ([0e4a504](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/0e4a504b79a7741ad47326702b21698b51f6e7e9))
+
 ## [1.7.3](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.7.2...v1.7.3) (2025-10-19)
 
 

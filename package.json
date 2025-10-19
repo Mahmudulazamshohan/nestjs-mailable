@@ -1,6 +1,6 @@
 {
   "name": "nestjs-mailable",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "description": "A comprehensive NestJS mail package with design patterns for email handling, templating, and multi-provider support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
