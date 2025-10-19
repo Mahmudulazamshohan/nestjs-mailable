@@ -142,3 +142,18 @@ examples/nestjs-email-app/.env
 CLAUDE.md
 QWEN.md
 mailgun-emails/
+
+# Test files with credentials (should never be committed)
+test-resend.js
+test-aws-ses.js
+test-*.js
+.env*.local
+
+# IDE and system files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+GEMINI.md
