@@ -1,3 +1,17 @@
+## [1.6.1](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.6.0...v1.6.1) (2025-10-16)
+
+
+### Bug Fixes
+
+* update packages ([d68679a](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/d68679a53791d54136451a43b69df0092a66e902))
+
+# [1.6.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.5.0...v1.6.0) (2025-10-16)
+
+
+### Features
+
+* add new resend mail sending support ([005884b](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/005884b6fb372dd8ef191bef547cf7ff0156f871))
+
 # [1.5.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.4.0...v1.5.0) (2025-10-13)
 
 
