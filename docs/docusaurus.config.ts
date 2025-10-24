@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'NestJS Mailable',
   tagline: 'A comprehensive NestJS mail package with modern design patterns for seamless email handling',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -45,6 +45,8 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/Mahmudulazamshohan/nestjs-mailable/tree/main/docs/',
+          showLastUpdateTime: true,
+          showLastUpdateAuthor: true,
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -54,14 +56,21 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
+    // Modern social card
     image: 'img/docusaurus-social-card.jpg',
+    // Dark mode by default with Dracula theme
+    colorMode: {
+      defaultMode: 'dark',
+      disableSwitch: false,
+      respectPrefersColorScheme: false,
+    },
     navbar: {
       title: 'NestJS Mailable',
       logo: {
         alt: 'NestJS Mailable Logo',
         src: 'img/logo.svg',
       },
+      hideOnScroll: false,
       items: [
         {
           type: 'docSidebar',
@@ -114,8 +123,32 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} NestJS Mailable Team. Built with Docusaurus.`,
     },
     prism: {
-      theme: prismThemes.dracula,
+      theme: prismThemes.nightOwl,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: ['bash', 'json', 'typescript', 'javascript', 'tsx', 'jsx'],
+      defaultLanguage: 'typescript',
+      magicComments: [
+        {
+          className: 'theme-code-block-highlighted-line',
+          line: 'highlight-next-line',
+          block: {start: 'highlight-start', end: 'highlight-end'},
+        },
+        {
+          className: 'code-block-error-line',
+          line: 'error-line',
+        },
+      ],
+    },
+    // Enable line numbers in code blocks
+    codeblock: {
+      showLineNumbers: true,
+    },
+    // Docs configuration
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true,
+      },
     },
   } satisfies Preset.ThemeConfig,
 };

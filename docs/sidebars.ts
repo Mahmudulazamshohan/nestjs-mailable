@@ -16,11 +16,19 @@ const sidebars: SidebarsConfig = {
   // Documentation sidebar
   tutorialSidebar: [
     'intro',
-    'configuration', 
+    'configuration',
     'basic-usage',
     'mailables',
     'templates',
-    'testing',
+    {
+      type: 'category',
+      label: 'Testing',
+      items: [
+        'testing',
+        'jest-mocking',
+        'testing-utilities',
+      ],
+    },
     'advanced'
   ],
 };

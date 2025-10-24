@@ -1,0 +1,18 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bold, simple favicon optimized for small sizes -->
+
+  <!-- Solid background -->
+  <rect width="32" height="32" rx="6" fill="#282a36"/>
+
+  <!-- Bold envelope - simplified -->
+  <rect x="5" y="9" width="22" height="14" rx="2" fill="#bd93f9"/>
+
+  <!-- Envelope flap - thick line -->
+  <path d="M5 9L16 17L27 9" stroke="#ff79c6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Flap shadow for depth -->
+  <path d="M16 17L5 9V11L16 18.5L27 11V9L16 17Z" fill="#282a36" opacity="0.3"/>
+
+  <!-- Bright accent line -->
+  <line x1="5" y1="23" x2="27" y2="23" stroke="#50fa7b" stroke-width="2" stroke-linecap="round"/>
+</svg>

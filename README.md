@@ -3,7 +3,6 @@
 Production-ready email handling for NestJS with Laravel-inspired mailable classes, fluent API, and multi-transport support.
 
 [![npm version](https://img.shields.io/npm/v/nestjs-mailable.svg)](https://www.npmjs.com/package/nestjs-mailable)
-[![npm downloads](https://img.shields.io/npm/dm/nestjs-mailable.svg)](https://www.npmjs.com/package/nestjs-mailable)
 [![build status](https://img.shields.io/github/actions/workflow/status/Mahmudulazamshohan/nestjs-mailable/release.yml?branch=main)](https://github.com/Mahmudulazamshohan/nestjs-mailable/actions)
 [![typescript](https://img.shields.io/badge/typescript-5.7-blue.svg)](https://www.typescriptlang.org/)
 [![node](https://img.shields.io/node/v/nestjs-mailable.svg)](https://nodejs.org)

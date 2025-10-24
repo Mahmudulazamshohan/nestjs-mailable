@@ -11,35 +11,34 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Modern Design Patterns',
+    title: 'Laravel-Style Mailable Classes',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Built with proven design patterns for maintainable email handling in 
-        enterprise applications. Features <strong>Mailable classes</strong>, 
-        fluent APIs, and comprehensive testing utilities.
+        Build clean, reusable email components with <strong>Mailable classes</strong> inspired by Laravel.
+        Organize with <code>envelope()</code>, <code>content()</code>, and <code>attachments()</code>.
+        Type-safe and testable for enterprise applications.
       </>
     ),
   },
   {
-    title: 'Multiple Transports',
+    title: 'Multiple Transport Providers',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Support for <strong>SMTP</strong>, <strong>Amazon SES</strong>, <strong>Mailgun</strong>, 
-        and custom transports. Switch between providers seamlessly with zero code changes.
-        Perfect for development, staging, and production environments.
+        Built-in support for <strong>SMTP</strong>, <strong>AWS SES</strong>, <strong>Mailgun</strong>, <strong>Mailjet</strong>, and <strong>Resend</strong>.
+        Switch providers with configuration. Use <code>MailFake</code> for testing environments.
       </>
     ),
   },
   {
-    title: 'Production Ready',
+    title: 'Template Engine Support',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Comprehensive error handling, queue integration, template engines 
-        (Handlebars, EJS, Pug, MJML), testing utilities with <code>MailFake</code>, 
-        and monitoring capabilities for enterprise applications.
+        Design emails with <strong>Handlebars</strong>, <strong>EJS</strong>, <strong>Pug</strong>, or <strong>MJML</strong>.
+        Includes partials, helpers, and layouts.
+        Fluent API: <code>mailService.to(email).send()</code>
       </>
     ),
   },
@@ -61,7 +60,7 @@ export default function HomepageFeatures(): ReactNode {
   return (
     <section className={styles.features}>
       <div className="container">
-        <div className="row">
+        <div className="row" style={{alignItems: 'stretch'}}>
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />
           ))}
