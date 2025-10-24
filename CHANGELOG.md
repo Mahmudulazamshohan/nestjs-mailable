@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.7.4...v1.8.0) (2025-10-24)
+
+
+### Features
+
+* update nestjs version & add mailjet support with jest mocking  testing utils ([5aefaf8](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/5aefaf8bbd80d3dd675ea75ea0d4a82cfe10784e))
+
 ## [1.7.4](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.7.3...v1.7.4) (2025-10-19)
 
 
