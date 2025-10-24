@@ -15,3 +15,6 @@ export { Mailable, AttachmentBuilder } from './classes/mailable';
 
 // Builder for fluent API
 export { MailableBuilder } from './builders/mailable.builder';
+
+// Testing utilities
+export * from './testing';

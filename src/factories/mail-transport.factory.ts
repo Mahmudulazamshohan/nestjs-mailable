@@ -3,6 +3,7 @@ import { MailTransport, TransportConfiguration } from '../interfaces/mail.interf
 import { SmtpTransport } from '../transports/smtp.transport';
 import { SesTransport } from '../transports/ses.transport';
 import { MailgunTransport } from '../transports/mailgun.transport';
+import { MailjetTransport } from '../transports/mailjet.transport';
 import { TransportType } from '../types/transport.type';
 
 // Factory Pattern Implementation
@@ -38,6 +39,15 @@ export class MailTransportFactory {
           transport: 'mailgun',
           options: config.options,
         });
+      case TransportType.MAILJET:
+        // Validate that options are provided
+        if (!config.options) {
+          throw new Error('Mailjet transport requires options configuration');
+        }
+        return new MailjetTransport({
+          transport: 'mailjet',
+          options: config.options,
+        });
       default: {
         // TypeScript will catch this at compile time if we miss any transport types
         throw new Error(`Unsupported transport type: ${(config as any).type || 'unknown'}`);
@@ -51,6 +61,6 @@ export class MailTransportFactory {
 
   // Transport Strategy Pattern
   getAvailableTransports(): TransportType[] {
-    return [TransportType.SMTP, TransportType.SES, TransportType.MAILGUN];
+    return [TransportType.SMTP, TransportType.SES, TransportType.MAILGUN, TransportType.MAILJET];
   }
 }

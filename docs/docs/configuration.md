@@ -202,6 +202,47 @@ For transactional emails with Mailgun's reliable delivery.
 }
 ```
 
+### Mailjet Transport
+
+For scalable email delivery with Mailjet's API v3.1.
+
+> **Prerequisites**: Ensure your sender email address is verified in your Mailjet account
+
+```typescript
+{
+  transport: {
+    type: TransportType.MAILJET,
+    options: {
+      apiKey: process.env.MAILJET_API_KEY,
+      apiSecret: process.env.MAILJET_API_SECRET,
+      timeout: 5000 // Optional: timeout in milliseconds
+    }
+  },
+  from: {
+    address: 'noreply@yourapp.com', // Must be verified in Mailjet
+    name: 'Your App'
+  }
+}
+```
+
+**Important**: Before sending emails with Mailjet:
+1. Verify your sender email address in the Mailjet dashboard
+2. Set the verified email as the `from.address` in configuration
+3. Ensure API key and secret have the required permissions
+
+### Resend Transport
+
+For modern, developer-friendly email delivery with Resend.
+
+```typescript
+{
+  transport: {
+    type: TransportType.RESEND,
+    apiKey: process.env.RESEND_API_KEY
+  }
+}
+```
+
 ## Single Transport Configuration (v1.1+)
 
 The new v1.1+ configuration format focuses on single transport per module instance:

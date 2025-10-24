@@ -1,7 +1,6 @@
 import { TransportType } from '../types/transport.type';
 import { TemplateEngineType } from '../constants/template.constants';
 
-// Core interfaces for mail functionality
 export interface MailConfiguration {
   transport: TransportConfiguration;
   from?: Address;
@@ -9,7 +8,7 @@ export interface MailConfiguration {
   templates?: TemplateConfiguration;
 }
 
-// Discriminated union types for transport-specific configurations
+// Discriminated union enforces transport-specific required fields
 export interface SMTPTransportConfiguration {
   type: typeof TransportType.SMTP;
   host: string;
@@ -38,17 +37,28 @@ export interface MailgunTransportConfiguration {
   options: MailgunOptions;
 }
 
-// Union type that enforces transport-specific required fields
+export interface MailjetTransportConfiguration {
+  type: typeof TransportType.MAILJET;
+  options: MailjetOptions;
+}
+
 export type TransportConfiguration =
   | SMTPTransportConfiguration
   | SESTransportConfiguration
-  | MailgunTransportConfiguration;
+  | MailgunTransportConfiguration
+  | MailjetTransportConfiguration;
 
 export interface MailgunOptions {
   domain: string;
   apiKey: string;
   host?: string;
   protocol?: string;
+  timeout?: number;
+}
+
+export interface MailjetOptions {
+  apiKey: string;
+  apiSecret: string;
   timeout?: number;
 }
 
@@ -95,50 +105,19 @@ export interface Content {
   metadata?: Record<string, unknown>;
 }
 
-/**
- * Defines the interface for a template engine, responsible for rendering and compiling email templates.
- */
+/** Template engine interface for rendering and compiling email templates */
 export interface TemplateEngine {
-  /**
-   * Renders a template with the given context.
-   * @param template The template string or path.
-   * @param context The data to be used in the template.
-   * @returns A promise that resolves to the rendered string.
-   */
   render(template: string, context: Record<string, unknown>): Promise<string>;
-  /**
-   * Compiles a template source into a reusable function.
-   * @param source The template source string.
-   * @returns A promise that resolves to a function that can render the template with a given context.
-   */
   compile(source: string): Promise<(context: Record<string, unknown>) => string>;
 }
 
-/**
- * Defines the interface for a mail transport service, responsible for sending emails.
- */
+/** Mail transport interface for sending emails */
 export interface MailTransport {
-  /**
-   * Sends an email with the given content.
-   * @param content The email content to be sent.
-   * @returns A promise that resolves to the transport's response.
-   */
   send(content: Content): Promise<unknown>;
-  /**
-   * Verifies the transport configuration.
-   * @returns A promise that resolves to true if the transport is valid, false otherwise.
-   */
   verify?(): Promise<boolean>;
-  /**
-   * Closes the transport connection.
-   * @returns A promise that resolves when the connection is closed.
-   */
   close?(): Promise<void>;
 }
 
-/**
- * Mailable envelope configuration interface
- */
 export interface MailableEnvelope {
   subject?: string;
   tags?: string[];
@@ -146,9 +125,6 @@ export interface MailableEnvelope {
   using?: Array<(message: unknown) => void>;
 }
 
-/**
- * Mailable content configuration interface
- */
 export interface MailableContent {
   html?: string;
   text?: string;
@@ -157,18 +133,12 @@ export interface MailableContent {
   with?: Record<string, unknown>;
 }
 
-/**
- * Mailable headers configuration interface
- */
 export interface MailableHeaders {
   messageId?: string;
   references?: string[];
   text?: Record<string, string>;
 }
 
-/**
- * Mailable attachment configuration interface
- */
 export interface MailableAttachment {
   path?: string;
   storage?: string;
