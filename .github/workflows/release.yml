@@ -5,34 +5,47 @@ on:
     branches:
       - main
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPMTOKEN }}
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPMTOKEN }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.GITHUBTOKEN }}
+      issues: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          registry-url: 'https://registry.npmjs.org'
       - name: Setup Yarn
         run: npm install -g yarn
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Verify npm publish access
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPMTOKEN }}
         run: |
           set -euo pipefail
+          if [ -z "${NPM_TOKEN:-}" ]; then
+            echo "Missing npm token. Set NPM_TOKEN or NPMTOKEN in repository secrets."
+            exit 1
+          fi
+          echo "::add-mask::${NPM_TOKEN}"
+          cat > "$RUNNER_TEMP/.npmrc" << EOF
+          registry=https://registry.npmjs.org
+          //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+          EOF
+          export NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/.npmrc"
           NPM_USER="$(npm whoami --registry=https://registry.npmjs.org/)"
           PACKAGE_NAME="$(node -p "require('./package.json').name")"
           echo "Authenticated npm user: ${NPM_USER}"
@@ -65,4 +78,7 @@ jobs:
         run: yarn run build:core
       - name: Run semantic-release
         id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.GITHUBTOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPMTOKEN }}
         run: npx semantic-release --debug
