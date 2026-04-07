@@ -16,6 +16,34 @@ When testing applications that use NestJS Mailable, you'll want to mock email se
 
 This guide covers mocking strategies for all NestJS Mailable components.
 
+## Unified Mock Support
+
+### `createMailMockSupport()`
+
+Use `createMailMockSupport()` when you want one helper that gives you:
+- a mocked `mailService`
+- a mocked `transport`
+- a controllable `server` state with sent-mail assertions
+
+```typescript
+import { createMailMockSupport } from 'nestjs-mailable/testing';
+
+describe('NotificationService', () => {
+  it('sends mail and asserts against mock server state', async () => {
+    const { mailService, server } = createMailMockSupport();
+
+    await mailService.to('user@example.com').send({
+      subject: 'Welcome',
+      html: '<p>Hello</p>',
+    });
+
+    server.assertSentCount(1);
+    expect(server.getSentMails()[0].content.to).toBe('user@example.com');
+    expect(mailService.hasSent()).toBe(true);
+  });
+});
+```
+
 ## Mocking the MailService
 
 ### Basic MailService Mock
@@ -23,26 +51,14 @@ This guide covers mocking strategies for all NestJS Mailable components.
 ```typescript
 import { Test, TestingModule } from '@nestjs/testing';
 import { MailService } from 'nestjs-mailable';
+import { createMailServiceMock } from 'nestjs-mailable/testing';
 
 describe('UserService with Mocked MailService', () => {
   let userService: UserService;
   let mailService: MailService;
 
   beforeEach(async () => {
-    const mockMailService = {
-      to: jest.fn().mockReturnThis(),
-      cc: jest.fn().mockReturnThis(),
-      bcc: jest.fn().mockReturnThis(),
-      from: jest.fn().mockReturnThis(),
-      replyTo: jest.fn().mockReturnThis(),
-      subject: jest.fn().mockReturnThis(),
-      html: jest.fn().mockReturnThis(),
-      text: jest.fn().mockReturnThis(),
-      template: jest.fn().mockReturnThis(),
-      send: jest.fn().mockResolvedValue(true),
-      fake: jest.fn(),
-      clearSent: jest.fn(),
-    };
+    const mockMailService = createMailServiceMock();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -69,30 +85,12 @@ describe('UserService with Mocked MailService', () => {
 ### MailService with Fluent API Mocking
 
 ```typescript
+import { createMailMockSupport } from 'nestjs-mailable/testing';
+
 describe('Fluent API Mocking', () => {
-  let mailService: MailService;
-
-  beforeEach(async () => {
-    const mockMailService = {
-      to: jest.fn().mockReturnThis(),
-      cc: jest.fn().mockReturnThis(),
-      bcc: jest.fn().mockReturnThis(),
-      subject: jest.fn().mockReturnThis(),
-      html: jest.fn().mockReturnThis(),
-      template: jest.fn().mockReturnThis(),
-      send: jest.fn().mockResolvedValue({ id: 'email-123' }),
-    };
-
-    const module = await Test.createTestingModule({
-      providers: [
-        { provide: MailService, useValue: mockMailService },
-      ],
-    }).compile();
-
-    mailService = module.get<MailService>(MailService);
-  });
-
   it('should support method chaining', async () => {
+    const { mailService, server } = createMailMockSupport();
+
     const result = await mailService
       .to('user@example.com')
       .cc('manager@example.com')
@@ -100,10 +98,11 @@ describe('Fluent API Mocking', () => {
       .html('<p>Test</p>')
       .send();
 
+    server.assertSentCount(1);
     expect(mailService.to).toHaveBeenCalledWith('user@example.com');
     expect(mailService.cc).toHaveBeenCalledWith('manager@example.com');
     expect(mailService.subject).toHaveBeenCalledWith('Test');
-    expect(result).toEqual({ id: 'email-123' });
+    expect(result).toHaveProperty('messageId');
   });
 });
 ```

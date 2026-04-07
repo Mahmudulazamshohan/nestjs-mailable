@@ -52,3 +52,12 @@ export {
   TestModuleBuilder,
   type ModuleMockConfig,
 } from './module.mock';
+
+// Advanced Mock Support
+export {
+  createMailMockSupport,
+  type MockMailRecord,
+  type MockMailServer,
+  type MockSupportConfig,
+  type MockSupport,
+} from './mock-support';

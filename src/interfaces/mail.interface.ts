@@ -1,11 +1,32 @@
 import { TransportType } from '../types/transport.type';
 import { TemplateEngineType } from '../constants/template.constants';
 
+export type RetryStrategy = 'fixed' | 'exponential' | 'linear';
+
+export interface RetryOptions {
+  attempts: number;
+  strategy?: RetryStrategy;
+  delay?: number;
+  maxDelay?: number;
+  jitter?: boolean;
+}
+
+export interface TemplateCacheConfiguration {
+  enabled: boolean;
+  ttl?: number;
+  maxSize?: number;
+}
+
+export interface EventsConfiguration {
+  enabled: boolean;
+}
+
 export interface MailConfiguration {
   transport: TransportConfiguration;
   from?: Address;
   replyTo?: Address | false;
   templates?: TemplateConfiguration;
+  events?: EventsConfiguration;
 }
 
 // Discriminated union enforces transport-specific required fields
@@ -19,6 +40,7 @@ export interface SMTPTransportConfiguration {
     user: string;
     pass: string;
   };
+  retry?: RetryOptions;
 }
 
 export interface SESTransportConfiguration {
@@ -30,16 +52,19 @@ export interface SESTransportConfiguration {
     sessionToken?: string;
   };
   endpoint?: string;
+  retry?: RetryOptions;
 }
 
 export interface MailgunTransportConfiguration {
   type: typeof TransportType.MAILGUN;
   options: MailgunOptions;
+  retry?: RetryOptions;
 }
 
 export interface MailjetTransportConfiguration {
   type: typeof TransportType.MAILJET;
   options: MailjetOptions;
+  retry?: RetryOptions;
 }
 
 export type TransportConfiguration =
@@ -66,6 +91,7 @@ export interface TemplateConfiguration {
   engine: TemplateEngineType;
   directory: string;
   partials?: Record<string, string>;
+  cache?: TemplateCacheConfiguration;
   options?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     helpers?: Record<string, (...args: any[]) => any>;

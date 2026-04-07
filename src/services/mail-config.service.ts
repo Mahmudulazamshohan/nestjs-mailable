@@ -3,6 +3,7 @@ import {
   MailConfiguration,
   TransportConfiguration,
   TemplateConfiguration,
+  EventsConfiguration,
   Address,
 } from '../interfaces/mail.interface';
 import { TransportType } from '../types/transport.type';
@@ -38,6 +39,10 @@ export class MailConfigService {
 
   getTemplateConfig(): TemplateConfiguration | undefined {
     return this.config.templates;
+  }
+
+  getEventsConfig(): EventsConfiguration | undefined {
+    return this.config.events;
   }
 
   private getDefaultConfig(): MailConfiguration {

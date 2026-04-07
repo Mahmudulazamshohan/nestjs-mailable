@@ -4,7 +4,7 @@ This is a complete example application demonstrating the usage of nestjs-mailabl
 
 ## Prerequisites
 
-1. Node.js (version 14 or higher)
+1. Node.js (version 18 or higher)
 2. MailDev for testing emails locally
 
 ## Setup

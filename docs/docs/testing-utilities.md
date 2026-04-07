@@ -15,6 +15,7 @@ import {
   createMailServiceMock,
   createSmtpTransportMock,
   createTestModuleWithMockedMailService,
+  createMailMockSupport,
   // ... other utilities
 } from 'nestjs-mailable/testing';
 ```
@@ -325,32 +326,95 @@ const userService = module.get<UserService>(UserService);
 - `addProviders(providers)` - Add multiple providers
 - `build()` - Build and return the test module
 
+## Advanced Mock Support
+
+### `createMailMockSupport(config)`
+
+Creates a unified mock bundle with:
+- `mailService` mock with fluent API and send tracking
+- `transport` mock for direct transport-level testing
+- `server` controller to simulate server up/down and assert sent mail
+
+```typescript
+import { createMailMockSupport } from 'nestjs-mailable/testing';
+
+const { mailService, server, transport } = createMailMockSupport({
+  autoStart: true,
+});
+
+await mailService
+  .to('user@example.com')
+  .subject('Welcome')
+  .send({ html: '<p>Hello</p>' });
+
+server.assertSentCount(1);
+expect(server.getLastSentMail()?.content.subject).toBe('Welcome');
+expect(mailService.hasSentTo('user@example.com')).toBe(true);
+
+await expect(transport.verify()).resolves.toBe(true);
+```
+
+**Config:**
+
+```typescript
+interface MockSupportConfig {
+  autoStart?: boolean; // default: true
+  sendError?: Error; // force send() to fail
+  customResponse?: unknown | ((content: Content, sentCount: number) => unknown);
+  verifyFailure?: boolean; // force verify() to fail
+}
+```
+
+**Server methods:**
+- `start()` / `stop()` / `isRunning()`
+- `reset()`
+- `getSentMails()` / `getLastSentMail()`
+- `assertSent(predicate?)`
+- `assertSentCount(expectedCount)`
+
+### Example: Simulate Mock Server Downtime
+
+```typescript
+const { mailService, server } = createMailMockSupport({ autoStart: false });
+
+await expect(
+  mailService.send({ to: 'user@example.com', subject: 'Will fail' })
+).rejects.toThrow('Mock server is not running');
+
+server.start();
+
+await expect(
+  mailService.send({ to: 'user@example.com', subject: 'Will pass' })
+).resolves.toHaveProperty('messageId');
+```
+
 ## Complete Examples
 
 ### Testing a Service with Mail Functionality
 
 ```typescript
 import { Test } from '@nestjs/testing';
-import { createMailServiceMock } from 'nestjs-mailable/testing';
-import { UserService } from './user.service';
 import { MailService } from 'nestjs-mailable';
+import { createMailMockSupport } from 'nestjs-mailable/testing';
 
 describe('UserService', () => {
   let userService: UserService;
-  let mailService: MailService;
+  let mailService: any;
+  let server: any;
 
   beforeEach(async () => {
-    const mockMailService = createMailServiceMock();
+    const mockSupport = createMailMockSupport();
+    mailService = mockSupport.mailService;
+    server = mockSupport.server;
 
     const module = await Test.createTestingModule({
       providers: [
         UserService,
-        { provide: MailService, useValue: mockMailService },
+        { provide: MailService, useValue: mailService },
       ],
     }).compile();
 
     userService = module.get<UserService>(UserService);
-    mailService = module.get<MailService>(MailService);
   });
 
   it('should send welcome email on registration', async () => {
@@ -358,13 +422,13 @@ describe('UserService', () => {
 
     await userService.registerUser(user);
 
+    server.assertSentCount(1);
+    expect(server.getSentMails()[0].content.subject).toBeDefined();
     expect(mailService.to).toHaveBeenCalledWith(user.email);
-    expect(mailService.send).toHaveBeenCalled();
   });
 
   it('should handle email sending errors', async () => {
-    const error = new Error('Email service down');
-    jest.spyOn(mailService, 'send').mockRejectedValueOnce(error);
+    mailService.send.mockRejectedValueOnce(new Error('Email service down'));
 
     const user = { name: 'Jane', email: 'jane@example.com' };
 
@@ -378,9 +442,7 @@ describe('UserService', () => {
 ### Testing Multiple Email Sends
 
 ```typescript
-const module = await createTestModuleWithFakeMailService([UserService]);
-const userService = module.get<UserService>(UserService);
-const mailService = module.get<MailService>(MailService);
+const { mailService, server } = createMailMockSupport();
 
 // Send to multiple users
 const users = [
@@ -394,9 +456,9 @@ for (const user of users) {
 }
 
 // Verify all emails were sent
-expect(mailService.getSent()).toHaveLength(3);
-users.forEach((user, index) => {
-  expect(mailService.getSent()[index].to).toBe(user.email);
+server.assertSentCount(3);
+users.forEach((user) => {
+  expect(mailService.hasSentTo(user.email)).toBe(true);
 });
 ```
 
@@ -459,6 +521,13 @@ it('should gracefully handle email failures', async () => {
 
 ```typescript
 const mockMailService: jest.Mocked<MailService> = createMailServiceMock();
+```
+
+For richer integration-style assertions in unit tests:
+
+```typescript
+const { mailService, server } = createMailMockSupport();
+server.assertSentCount(0);
 ```
 
 ### 2. Reset Between Tests

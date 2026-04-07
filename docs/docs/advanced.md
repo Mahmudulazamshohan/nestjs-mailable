@@ -199,52 +199,52 @@ export class MailModule {}
 
 ## Testing Email Functionality
 
-### Using MailFake for Testing
+### Using Unified Mock Support for Testing
 
 ```typescript
 import { Test } from '@nestjs/testing';
 import { MailService } from 'nestjs-mailable';
+import { createMailMockSupport } from 'nestjs-mailable/testing';
 
 describe('OrderService', () => {
   let mailService: MailService;
+  let server: any;
   let orderService: OrderService;
 
   beforeEach(async () => {
+    const mockSupport = createMailMockSupport();
+
     const module = await Test.createTestingModule({
-      providers: [OrderService, MailService],
+      providers: [OrderService, { provide: MailService, useValue: mockSupport.mailService }],
     }).compile();
 
-    mailService = module.get<MailService>(MailService);
+    mailService = mockSupport.mailService as unknown as MailService;
+    server = mockSupport.server;
     orderService = module.get<OrderService>(OrderService);
-    
-    // Enable fake mode for testing
-    const mailFake = mailService.fake();
   });
 
   it('should send order confirmation email', async () => {
-    const mailFake = mailService.fake();
     const order = { id: 123, customer: { email: 'test@example.com' } };
     
     await orderService.confirmOrder(order);
     
     // Assert email was sent
-    const sentMails = mailFake.getSentMails();
+    const sentMails = server.getSentMails();
     expect(sentMails).toHaveLength(1);
     
-    const sentEmail = sentMails[0];
+    const sentEmail = sentMails[0].content;
     expect(sentEmail.to).toBe('test@example.com');
     expect(sentEmail.subject).toContain('Order Confirmation');
   });
 
   it('should track sent emails in fake mode', async () => {
-    const mailFake = mailService.fake();
     const order = { id: 123, customer: { email: 'test@example.com' } };
     
     await orderService.confirmOrder(order);
     
-    // Verify emails are tracked in fake mode
-    mailFake.assertSentCount(1);
-    mailFake.assertSent((mail) => mail.to === 'test@example.com');
+    // Verify emails are tracked
+    server.assertSentCount(1);
+    server.assertSent((mail) => mail.content.to === 'test@example.com');
   });
 });
 ```

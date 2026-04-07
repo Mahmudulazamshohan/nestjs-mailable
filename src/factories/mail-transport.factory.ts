@@ -5,6 +5,7 @@ import { SesTransport } from '../transports/ses.transport';
 import { MailgunTransport } from '../transports/mailgun.transport';
 import { MailjetTransport } from '../transports/mailjet.transport';
 import { TransportType } from '../types/transport.type';
+import { RetryTransport } from '../retry/retry-transport';
 
 // Factory Pattern Implementation
 @Injectable()
@@ -12,10 +13,18 @@ export class MailTransportFactory {
   private customTransports = new Map<string, () => MailTransport>();
 
   createTransport(config: TransportConfiguration): MailTransport {
-    // TypeScript will enforce that each case has the required fields
+    const transport = this.createBaseTransport(config);
+
+    if (config.retry && config.retry.attempts > 1) {
+      return new RetryTransport(transport, config.retry);
+    }
+
+    return transport;
+  }
+
+  private createBaseTransport(config: TransportConfiguration): MailTransport {
     switch (config.type) {
       case TransportType.SMTP:
-        // TypeScript ensures config has host, auth.user, auth.pass as required
         return new SmtpTransport({
           host: config.host,
           port: config.port,
@@ -24,14 +33,12 @@ export class MailTransportFactory {
           auth: config.auth,
         });
       case TransportType.SES:
-        // TypeScript ensures config has region and credentials as required
         return new SesTransport({
           endpoint: config.endpoint,
           region: config.region,
           credentials: config.credentials,
         });
       case TransportType.MAILGUN:
-        // Validate that options are provided
         if (!config.options) {
           throw new Error('Mailgun transport requires options configuration');
         }
@@ -40,7 +47,6 @@ export class MailTransportFactory {
           options: config.options,
         });
       case TransportType.MAILJET:
-        // Validate that options are provided
         if (!config.options) {
           throw new Error('Mailjet transport requires options configuration');
         }
@@ -49,7 +55,7 @@ export class MailTransportFactory {
           options: config.options,
         });
       default: {
-        // TypeScript will catch this at compile time if we miss any transport types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         throw new Error(`Unsupported transport type: ${(config as any).type || 'unknown'}`);
       }
     }

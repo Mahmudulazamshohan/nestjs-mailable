@@ -128,7 +128,7 @@ await this.mailService.to(user.email).send(new WelcomeMail(user));
 - **Template Engines**: Handlebars, EJS, Pug
 - **Advanced Mailable Classes**: Organized and reusable email components  
 - **Fluent API**: Chain methods for complex emails
-- **Testing Support**: Built-in fake mailer for testing
+- **Testing Support**: Built-in fake mailer plus unified mock support utilities
 - **Attachments**: File, data, and storage attachments
 - **TypeScript**: Full type support
 

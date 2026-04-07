@@ -6,7 +6,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'NestJS Mailable',
-  tagline: 'A comprehensive NestJS mail package with modern design patterns for seamless email handling',
+  tagline: 'Composable email workflows for NestJS apps',
   favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -56,9 +56,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Modern social card
     image: 'img/docusaurus-social-card.jpg',
-    // Dark mode by default with Dracula theme
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: false,
@@ -70,13 +68,18 @@ const config: Config = {
         alt: 'NestJS Mailable Logo',
         src: 'img/logo.svg',
       },
-      hideOnScroll: false,
+      hideOnScroll: true,
       items: [
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Documentation',
+          label: 'Docs',
+        },
+        {
+          to: '/docs/basic-usage',
+          label: 'Quickstart',
+          position: 'left',
         },
         {
           href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable',
@@ -89,41 +92,53 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Documentation',
           items: [
             {
               label: 'Introduction',
               to: '/docs/intro',
             },
+            {
+              label: 'Configuration',
+              to: '/docs/configuration',
+            },
+            {
+              label: 'Templates',
+              to: '/docs/templates',
+            },
+          ],
+        },
+        {
+          title: 'Project',
+          items: [
+            {
+              label: 'Repository',
+              href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable',
+            },
+            {
+              label: 'Releases',
+              href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable/releases',
+            }
           ],
         },
         {
           title: 'Community',
           items: [
             {
-              label: 'GitHub Issues',
+              label: 'Issues',
               href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable/issues',
             },
             {
-              label: 'GitHub Discussions',
+              label: 'Discussions',
               href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable/discussions',
             },
           ],
         },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/Mahmudulazamshohan/nestjs-mailable',
-            },
-          ],
-        },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} NestJS Mailable Team. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} NestJS Mailable.`,
     },
     prism: {
-      theme: prismThemes.nightOwl,
+      theme: prismThemes.dracula,
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['bash', 'json', 'typescript', 'javascript', 'tsx', 'jsx'],
       defaultLanguage: 'typescript',
@@ -139,11 +154,9 @@ const config: Config = {
         },
       ],
     },
-    // Enable line numbers in code blocks
     codeblock: {
       showLineNumbers: true,
     },
-    // Docs configuration
     docs: {
       sidebar: {
         hideable: true,

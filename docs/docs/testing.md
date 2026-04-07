@@ -4,11 +4,33 @@ sidebar_position: 6
 
 # Testing
 
-Test your emails easily with the built-in fake mailer. No emails are actually sent during testing.
+Test your emails using built-in testing utilities. No emails are actually sent during testing.
 
-## Basic Testing
+## Recommended for Service Tests
 
-Use `mailService.fake()` to capture emails instead of sending them:
+Use `createMailMockSupport()` for end-to-end service behavior in unit tests:
+
+```typescript
+import { createMailMockSupport } from 'nestjs-mailable/testing';
+
+describe('EmailService', () => {
+  it('tracks sent email and server state', async () => {
+    const { mailService, server } = createMailMockSupport();
+
+    await mailService.to('user@example.com').send({
+      subject: 'Welcome!',
+      html: '<p>Welcome to our app!</p>',
+    });
+
+    server.assertSentCount(1);
+    expect(server.getSentMails()[0].content.to).toBe('user@example.com');
+  });
+});
+```
+
+## MailFake (Isolated Fake Sender)
+
+Use `mailService.fake()` when you want to test mail payload assertions directly via the fake sender instance:
 
 ```typescript
 import { Test } from '@nestjs/testing';
@@ -28,8 +50,8 @@ describe('EmailService', () => {
   });
 
   it('should send welcome email', async () => {
-    // Send email
-    await mailService.send({
+    // Send email via the fake sender
+    await mailFake.send({
       to: 'user@example.com',
       subject: 'Welcome!',
       html: '<p>Welcome to our app!</p>'
@@ -52,8 +74,8 @@ Get all emails that were "sent":
 
 ```typescript
 it('should send multiple emails', async () => {
-  await mailService.send({ to: 'user1@example.com', subject: 'Hello' });
-  await mailService.send({ to: 'user2@example.com', subject: 'Hi' });
+  await mailFake.send({ to: 'user1@example.com', subject: 'Hello' });
+  await mailFake.send({ to: 'user2@example.com', subject: 'Hi' });
 
   const sentEmails = mailFake.getSentMails();
   expect(sentEmails).toHaveLength(2);
@@ -67,7 +89,7 @@ Check exact number of emails sent:
 
 ```typescript
 it('should send correct number of emails', async () => {
-  await mailService.send({ to: 'user@example.com', subject: 'Test' });
+  await mailFake.send({ to: 'user@example.com', subject: 'Test' });
   
   mailFake.assertSentCount(1);  // Passes
   mailFake.assertSentCount(2);  // Throws error
@@ -79,7 +101,7 @@ Check that at least one email was sent, optionally with conditions:
 
 ```typescript
 it('should send email with correct content', async () => {
-  await mailService.send({
+  await mailFake.send({
     to: 'user@example.com',
     subject: 'Welcome!',
     tags: ['welcome']

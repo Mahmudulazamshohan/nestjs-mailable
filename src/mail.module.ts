@@ -3,8 +3,8 @@ import { MailService } from './services/mail.service';
 import { MailConfigService } from './services/mail-config.service';
 import { MailTransportFactory } from './factories/mail-transport.factory';
 import { TemplateEngineFactory } from './services/template.service';
-
 import { MailConfiguration } from './interfaces/mail.interface';
+import { MAIL_EVENT_EMITTER } from './events/mail-events.interface';
 
 // Module options interface - Now directly takes MailConfiguration
 export interface MailModuleOptions extends MailConfiguration {
@@ -27,6 +27,12 @@ export interface MailModuleOptionsFactory {
 
 // Constants
 export const MAIL_MODULE_OPTIONS = 'MAIL_MODULE_OPTIONS';
+export { MAIL_EVENT_EMITTER };
+
+const defaultEventEmitterProvider: Provider = {
+  provide: MAIL_EVENT_EMITTER,
+  useValue: null,
+};
 
 @Module({})
 export class MailModule {
@@ -39,7 +45,14 @@ export class MailModule {
 
     return {
       module: MailModule,
-      providers: [configProvider, MailTransportFactory, TemplateEngineFactory, MailService, ...(providers || [])],
+      providers: [
+        configProvider,
+        defaultEventEmitterProvider,
+        MailTransportFactory,
+        TemplateEngineFactory,
+        MailService,
+        ...(providers || []),
+      ],
       exports: [MailService, MailConfigService, MailTransportFactory, TemplateEngineFactory, ...(exports || [])],
       global: true,
     };
@@ -53,9 +66,9 @@ export class MailModule {
       imports: options.imports || [],
       providers: [
         ...asyncProviders,
+        defaultEventEmitterProvider,
         MailTransportFactory,
         TemplateEngineFactory,
-
         MailService,
         ...(options.providers || []),
       ],
@@ -64,7 +77,6 @@ export class MailModule {
         MailConfigService,
         MailTransportFactory,
         TemplateEngineFactory,
-
         ...(options.exports || []),
       ],
       global: true,

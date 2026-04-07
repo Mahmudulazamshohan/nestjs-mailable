@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseTemplateEngine, ensurePackageAvailable } from './base.engine';
 import { TemplateConfiguration } from '../interfaces/mail.interface';
+import { LruCache } from '../cache/lru-cache';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ejs: any;
@@ -14,10 +15,18 @@ try {
 
 @Injectable()
 export class EjsTemplateEngine extends BaseTemplateEngine {
+  private compiledFns: LruCache<string, (ctx: Record<string, unknown>) => string> | null = null;
+  private ejsOptions: Record<string, unknown> = {};
+
   constructor(templateDir: string, mainFile: string, config?: TemplateConfiguration) {
     super(templateDir, mainFile, 'ejs');
     if (!ejs) {
       throw new Error('EJS template engine is not available. Please install it with: npm install ejs');
+    }
+
+    if (config?.cache?.enabled) {
+      this.compiledFns = new LruCache(config.cache.maxSize ?? 100, config.cache.ttl);
+      this.initSourceCache(config.cache);
     }
 
     if (config) {
@@ -26,21 +35,31 @@ export class EjsTemplateEngine extends BaseTemplateEngine {
   }
 
   private configureEngine(config: TemplateConfiguration): void {
-    // EJS doesn't have built-in partials or helpers like Handlebars
-    // But we can store config for potential future use
     if (config.options) {
-      // Store options for potential use in render method
+      this.ejsOptions = { ...config.options };
     }
   }
 
   async render(template: string, context: Record<string, unknown>): Promise<string> {
     try {
-      const templateSource = await this.loadTemplate(template);
       const templatePath = this.resolveTemplatePath(template);
 
+      if (this.compiledFns) {
+        let fn = this.compiledFns.get(template);
+        if (!fn) {
+          const source = await this.loadTemplate(template);
+          const compiled = ejs.compile(source, { filename: templatePath, rmWhitespace: false, ...this.ejsOptions });
+          fn = (ctx: Record<string, unknown>) => compiled(ctx);
+          this.compiledFns.set(template, fn);
+        }
+        return fn(context);
+      }
+
+      const templateSource = await this.loadTemplate(template);
       return ejs.render(templateSource, context, {
         filename: templatePath,
         rmWhitespace: false,
+        ...this.ejsOptions,
       });
     } catch (error) {
       throw new Error(`Failed to render EJS template '${template}': ${(error as Error).message}`);
@@ -49,9 +68,8 @@ export class EjsTemplateEngine extends BaseTemplateEngine {
 
   async compile(source: string): Promise<(context: Record<string, unknown>) => string> {
     try {
-      return (context: Record<string, unknown>) => {
-        return ejs.render(source, context, { rmWhitespace: false });
-      };
+      const compiled = ejs.compile(source, { rmWhitespace: false, ...this.ejsOptions });
+      return (context: Record<string, unknown>) => compiled(context);
     } catch (error) {
       throw new Error(`Failed to compile EJS template: ${(error as Error).message}`);
     }

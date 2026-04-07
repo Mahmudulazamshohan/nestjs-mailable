@@ -1,241 +1,234 @@
-/**
- * Ultra-Modern Homepage Design for NestJS Mailable
- * Featuring glassmorphism, stunning gradients, and smooth animations
- */
-
-.heroBanner {
-  padding: 10rem 0;
-  text-align: center;
+.hero {
   position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
-  color: white;
+  padding: clamp(3.8rem, 6vw, 6rem) 0 clamp(2.8rem, 5vw, 4.2rem);
 }
 
-/* Animated particle background */
-.heroBanner::before {
+.hero::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: float 25s ease-in-out infinite;
-  opacity: 0.4;
+  inset: 0;
+  background:
+    radial-gradient(circle at 10% 8%, rgba(189, 147, 249, 0.24), transparent 30%),
+    radial-gradient(circle at 90% 10%, rgba(255, 121, 198, 0.18), transparent 34%),
+    radial-gradient(circle at 56% 100%, rgba(139, 233, 253, 0.12), transparent 38%);
+  pointer-events: none;
+}
+
+.heroGrid {
+  position: relative;
   z-index: 1;
-}
-
-/* Shimmer overlay effect */
-.heroBanner::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%);
-  animation: shimmer 4s ease-in-out infinite;
-  z-index: 1;
-}
-
-/* Smooth floating animation */
-@keyframes float {
-  0%, 100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  33% {
-    transform: translate(40px, -40px) rotate(120deg);
-  }
-  66% {
-    transform: translate(-30px, 30px) rotate(240deg);
-  }
-}
-
-/* Elegant shimmer effect */
-@keyframes shimmer {
-  0%, 100% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-/* Pulse animation for CTA */
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
-  }
-}
-
-.buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: clamp(1rem, 3vw, 2rem);
   align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  margin-top: 3.5rem;
-  position: relative;
-  z-index: 10;
 }
 
-.buttons .button {
-  font-size: 1.125rem;
-  padding: 1.125rem 2.5rem;
-  min-width: 220px;
-  border-radius: 14px;
+.heroContent {
+  padding-right: 0.5rem;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ifm-color-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--ifm-color-primary) 12%, transparent);
+  color: var(--ifm-color-primary);
   font-weight: 700;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  letter-spacing: 0.025em;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.72rem;
 }
 
-.buttons .button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: all 0.6s ease;
+.heroTitle {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  max-width: 18ch;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.04;
 }
 
-.buttons .button:hover::before {
-  left: 100%;
+.heroSubtitle {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  max-width: 64ch;
+  font-size: clamp(1rem, 1.45vw, 1.18rem);
+  color: var(--ifm-color-emphasis-700);
 }
 
-.buttons .button--secondary {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  color: white;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+.actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 1.4rem;
 }
 
-.buttons .button--secondary:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.6);
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  color: white;
+.primaryAction,
+.secondaryAction {
+  min-width: 170px;
 }
 
-.buttons .button--outline {
+.transportRow {
+  margin-top: 1.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.transportRow span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border-radius: 10px;
+  padding: 0.34rem 0.58rem;
+  border: 1px solid var(--ifm-border-color);
+  background: color-mix(in srgb, var(--ifm-background-surface-color) 86%, transparent);
+  color: var(--ifm-color-emphasis-800);
+}
+
+.heroPanel {
+  border: 1px solid var(--ifm-border-color);
+  border-radius: 20px;
+  padding: 1.1rem;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--ifm-background-surface-color) 96%, transparent), color-mix(in srgb, var(--ifm-background-surface-color) 90%, transparent));
+  box-shadow: var(--ifm-shadow-md);
+}
+
+.panelEyebrow {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ifm-color-primary);
+}
+
+.installBlock {
+  margin-top: 0.72rem;
+  margin-bottom: 0;
+  border-radius: 12px;
+  padding: 0.8rem 0.86rem;
+  background: #282a36;
+  color: #f8f8f2;
+  border: 1px solid #44475a;
+  overflow-x: auto;
+}
+
+.installBlock code {
+  color: inherit;
+  font-size: 0.85rem;
+  border: none;
   background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  color: white;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  padding: 0;
 }
 
-.buttons .button--outline:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: white;
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  color: white;
+.panelText {
+  margin: 0.86rem 0 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.95rem;
 }
 
-/* === HERO CONTENT === */
-.heroBanner h1 {
-  font-size: 4.5rem;
-  font-weight: 900;
-  margin-bottom: 2rem;
-  background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.03em;
-  position: relative;
-  z-index: 10;
-  line-height: 1.1;
+.panelLink {
+  margin-top: 0.9rem;
+  display: inline-flex;
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.heroBanner .hero__subtitle {
-  font-size: 1.5rem;
-  font-weight: 500;
-  opacity: 0.95;
-  margin-bottom: 3.5rem;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.7;
-  position: relative;
-  z-index: 10;
-  color: rgba(255, 255, 255, 0.95);
+.jumpstart {
+  padding: 0.6rem 0 clamp(3rem, 5vw, 4rem);
 }
 
-/* === RESPONSIVE DESIGN === */
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 6rem 1.5rem;
+.jumpstartHeader {
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+.jumpstartHeader h2 {
+  margin: 0;
+}
+
+.jumpstartHeader p {
+  margin: 0.5rem 0 0;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.jumpstartGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.jumpCard {
+  display: block;
+  text-decoration: none;
+  border-radius: 16px;
+  border: 1px solid var(--ifm-border-color);
+  background: color-mix(in srgb, var(--ifm-background-surface-color) 94%, transparent);
+  box-shadow: var(--ifm-shadow-xs);
+  padding: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.jumpCard:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--ifm-color-primary) 45%, var(--ifm-border-color));
+  box-shadow: var(--ifm-shadow-sm);
+}
+
+.jumpCard h3 {
+  margin: 0;
+  font-size: 1.06rem;
+}
+
+.jumpCard p {
+  margin: 0.55rem 0 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.95rem;
+}
+
+.jumpCardCta {
+  display: inline-flex;
+  margin-top: 0.74rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .heroPanel {
+  background:
+    linear-gradient(165deg, rgba(48, 51, 65, 0.96), rgba(33, 34, 44, 0.9));
+}
+
+@media (max-width: 996px) {
+  .heroGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
-  .heroBanner h1 {
-    font-size: 3.25rem;
+  .heroContent {
+    padding-right: 0;
   }
 
-  .heroBanner .hero__subtitle {
-    font-size: 1.3rem;
-    margin-bottom: 2.5rem;
+  .jumpstartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-top: 3rem;
   }
 
-  .buttons {
+  .actions {
     flex-direction: column;
-    gap: 1.25rem;
   }
 
-  .buttons .button {
+  .primaryAction,
+  .secondaryAction {
     width: 100%;
-    max-width: 320px;
   }
-}
-
-@media screen and (max-width: 768px) {
-  .heroBanner {
-    padding: 5rem 1rem;
-  }
-
-  .heroBanner h1 {
-    font-size: 2.5rem;
-  }
-
-  .heroBanner .hero__subtitle {
-    font-size: 1.15rem;
-  }
-
-  .buttons .button {
-    font-size: 1rem;
-    padding: 1rem 2rem;
-  }
-}
-
-/* === DARK MODE ENHANCEMENTS === */
-[data-theme='dark'] .heroBanner {
-  background: linear-gradient(135deg, #0369a1 0%, #075985 50%, #0c4a6e 100%);
-}
-
-[data-theme='dark'] .buttons .button--secondary {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-[data-theme='dark'] .buttons .button--secondary:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-[data-theme='dark'] .buttons .button--outline {
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-[data-theme='dark'] .buttons .button--outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.8);
 }

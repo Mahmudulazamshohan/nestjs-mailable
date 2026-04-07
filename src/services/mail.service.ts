@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, Optional } from '@nestjs/common';
 import { Content, MailTransport, Address, TemplateEngine } from '../interfaces/mail.interface';
 import { MailConfigService } from './mail-config.service';
 import { MailTransportFactory } from '../factories/mail-transport.factory';
@@ -9,6 +9,11 @@ import {
   EjsTemplateEngine,
   PugTemplateEngine,
 } from './template.service';
+import { MailEventEmitter, MAIL_EVENT_EMITTER } from '../events/mail-events.interface';
+import { MAIL_SENT_EVENT, MAIL_FAILED_EVENT, MailSentEvent, MailFailedEvent } from '../events/mail-events';
+import { RetryExhaustedError } from '../retry/retry-transport';
+import { MailBatchSender } from '../batch/mail-batch-sender';
+import { BatchItem, BatchOptions } from '../batch/batch.interface';
 
 /**
  * MailService provides email sending, queuing, and template rendering.
@@ -25,11 +30,13 @@ export class MailService {
    * @param configService Provides mail and template configuration.
    * @param transportFactory Factory for creating mail transports.
    * @param templateEngineFactory Factory for template engines.
+   * @param eventEmitter Optional event emitter for mail lifecycle events.
    */
   constructor(
     private configService: MailConfigService,
     private transportFactory: MailTransportFactory,
     private templateEngineFactory: TemplateEngineFactory,
+    @Optional() @Inject(MAIL_EVENT_EMITTER) private eventEmitter: MailEventEmitter | null = null,
   ) {
     this.initializeTransport();
     this.initializeTemplateEngine();
@@ -45,7 +52,7 @@ export class MailService {
 
   /**
    * Sends an email using the provided mailable content or Mailable instance.
-   * Renders template if specified.
+   * Renders template if specified. Emits mail.sent or mail.failed events.
    * @param mailable The email content, metadata, or Mailable instance.
    */
   async send(mailable: Content | Mailable): Promise<any> {
@@ -72,16 +79,35 @@ export class MailService {
       }
     }
 
-    // Apply envelope customizations if present
-    if (content.metadata?.envelopeCustomizations) {
-      // For now, we'll store these for potential future use
-      // In a real implementation, you might apply these to the actual transport message
+    try {
+      const result = await this.transport.send(content);
+      this.emitEvent(MAIL_SENT_EVENT, new MailSentEvent(content, result, new Date()));
+      return result;
+    } catch (error) {
+      const attempts = error instanceof RetryExhaustedError ? error.attempts : 1;
+      this.emitEvent(MAIL_FAILED_EVENT, new MailFailedEvent(content, error as Error, attempts, new Date()));
+      throw error;
     }
+  }
 
-    // Send the email
-    const result = await this.transport.send(content);
+  /**
+   * Creates a MailBatchSender for sending multiple emails with concurrency control.
+   * @param items Array of batch items (to address + mailable).
+   * @param options Batch configuration (batchSize, concurrency, continueOnError).
+   */
+  batch(items: BatchItem[], options?: BatchOptions): MailBatchSender {
+    return new MailBatchSender(this, items, options ?? {});
+  }
 
-    return result;
+  /**
+   * Emits an event via the configured event emitter if events are enabled.
+   * @internal
+   */
+  emitEvent(event: string, payload: unknown): void {
+    const eventsConfig = this.configService.getEventsConfig();
+    if (eventsConfig?.enabled && this.eventEmitter) {
+      this.eventEmitter.emit(event, payload);
+    }
   }
 
   /**
@@ -124,7 +150,7 @@ export class MailService {
     try {
       switch (engineType) {
         case 'ejs':
-          this.templateEngine = new EjsTemplateEngine(this.templateDir, 'main.ejs');
+          this.templateEngine = new EjsTemplateEngine(this.templateDir, 'main.ejs', templateConfig);
           break;
         case 'pug':
           this.templateEngine = new PugTemplateEngine(this.templateDir, 'main.pug', templateConfig);

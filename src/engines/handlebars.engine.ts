@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseTemplateEngine, ensurePackageAvailable } from './base.engine';
 import { TemplateConfiguration } from '../interfaces/mail.interface';
+import { LruCache } from '../cache/lru-cache';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let HandlebarsLib: any;
@@ -15,7 +16,7 @@ try {
 @Injectable()
 export class HandlebarsTemplateEngine extends BaseTemplateEngine {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private compiledTemplates = new Map<string, any>();
+  private compiledTemplates: LruCache<string, any> | Map<string, any>;
   private isConfigured = false;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private handlebars: any;
@@ -28,6 +29,13 @@ export class HandlebarsTemplateEngine extends BaseTemplateEngine {
 
     // Create a new Handlebars instance for this template engine
     this.handlebars = HandlebarsLib.create();
+
+    if (config?.cache?.enabled) {
+      this.compiledTemplates = new LruCache<string, any>(config.cache.maxSize ?? 100, config.cache.ttl);
+      this.initSourceCache(config.cache);
+    } else {
+      this.compiledTemplates = new Map<string, any>();
+    }
 
     if (config) {
       this.configureEngine(config);
