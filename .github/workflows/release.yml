@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPMTOKEN }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPMTOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.GITHUBTOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,18 +26,35 @@ jobs:
         with:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
-      - name: Configure npm authentication
-        run: |
-          cat > ~/.npmrc << EOF
-          registry=https://registry.npmjs.org
-          //registry.npmjs.org/:_authToken=${NPM_TOKEN}
-          EOF
-        env:
-          NPM_TOKEN: ${{ secrets.NPMTOKEN }}
       - name: Setup Yarn
         run: npm install -g yarn
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+      - name: Verify npm publish access
+        run: |
+          set -euo pipefail
+          NPM_USER="$(npm whoami --registry=https://registry.npmjs.org/)"
+          PACKAGE_NAME="$(node -p "require('./package.json').name")"
+          echo "Authenticated npm user: ${NPM_USER}"
+          if npm view "${PACKAGE_NAME}" version --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+            MAINTAINERS_JSON="$(npm view "${PACKAGE_NAME}" maintainers --json --registry=https://registry.npmjs.org/)"
+            node -e '
+              const maintainers = JSON.parse(process.argv[1]);
+              const npmUser = process.argv[2];
+              const packageName = process.argv[3];
+              const entries = Array.isArray(maintainers) ? maintainers : [maintainers];
+              const usernames = entries
+                .map((entry) => (typeof entry === "string" ? entry.split(" <")[0] : entry?.name))
+                .filter(Boolean);
+              if (!usernames.includes(npmUser)) {
+                console.error(`npm user "${npmUser}" is not a maintainer of ${packageName}.`);
+                console.error(`Maintainers: ${usernames.join(", ") || "(none found)"}`);
+                process.exit(1);
+              }
+            ' "${MAINTAINERS_JSON}" "${NPM_USER}" "${PACKAGE_NAME}"
+          else
+            echo "Package ${PACKAGE_NAME} is not published yet; skipping maintainer check."
+          fi
       - name: Lint code
         run: yarn run lint:core
       - name: Type check
@@ -43,8 +65,4 @@ jobs:
         run: yarn run build:core
       - name: Run semantic-release
         id: semantic
-        run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
-          NPM_TOKEN: ${{ secrets.NPMTOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPMTOKEN }}
+        run: npx semantic-release --debug
