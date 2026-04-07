@@ -1,3 +1,7 @@
+## <small>1.9.1 (2026-04-07)</small>
+
+* fix: update github token ([e2d451e](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/e2d451e))
+
 ## 1.9.0 (2026-04-07)
 
 * fix: update tsconfig ([3934a7a](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/3934a7a))
