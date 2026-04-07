@@ -36,7 +36,7 @@ jobs:
       - name: Lint code
         run: yarn run lint:core
       - name: Type check
-        run: tsc --noEmit
+        run: yarn run typecheck
       - name: Run tests
         run: yarn run test:core
       - name: Build package
