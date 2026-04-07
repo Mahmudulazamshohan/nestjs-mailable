@@ -1,3 +1,11 @@
+## 1.9.0 (2026-04-07)
+
+* fix: update tsconfig ([3934a7a](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/3934a7a))
+* feat: retry and batch mailing features ([439f169](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/439f169))
+* feat: retry and batch mailing features ([ea0c040](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/ea0c040))
+* chore: update docs ([cbb9390](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/cbb9390))
+* chore: update semantic release process ([451ef1e](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/451ef1e))
+
 # [1.8.0](https://github.com/Mahmudulazamshohan/nestjs-mailable/compare/v1.7.4...v1.8.0) (2025-10-24)
 
 
