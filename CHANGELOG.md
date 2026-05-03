@@ -1,3 +1,8 @@
+## 1.12.0 (2026-05-03)
+
+* Merge branch 'main' of https://github.com/Mahmudulazamshohan/nestjs-mailable ([b2ec644](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/b2ec644))
+* feat: update pipeline ([d390587](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/d390587))
+
 ## 1.11.0 (2026-05-03)
 
 * feat: update code ([4ab6c0b](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/4ab6c0b))
