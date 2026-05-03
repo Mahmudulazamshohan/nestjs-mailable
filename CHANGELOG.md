@@ -1,3 +1,7 @@
+## 1.11.0 (2026-05-03)
+
+* feat: update code ([4ab6c0b](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/4ab6c0b))
+
 ## <small>1.9.1 (2026-04-07)</small>
 
 * fix: update github token ([e2d451e](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/e2d451e))
