@@ -2,84 +2,57 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  HUSKY: 0
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && !startsWith(github.event.head_commit.message, 'chore(release):') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
-          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUBTOKEN }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-      - name: Setup Yarn
-        run: npm install -g yarn
+          node-version: 20
+          cache: yarn
+          registry-url: https://registry.npmjs.org/
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      - name: Verify npm publish access
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPMTOKEN }}
-        run: |
-          set -euo pipefail
-          if [ -z "${NPM_TOKEN:-}" ]; then
-            echo "Missing npm token. Set NPM_TOKEN or NPMTOKEN in repository secrets."
-            exit 1
-          fi
-          echo "::add-mask::${NPM_TOKEN}"
-          cat > "$RUNNER_TEMP/.npmrc" << EOF
-          registry=https://registry.npmjs.org
-          //registry.npmjs.org/:_authToken=${NPM_TOKEN}
-          EOF
-          export NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/.npmrc"
-          NPM_USER="$(npm whoami --registry=https://registry.npmjs.org/)"
-          PACKAGE_NAME="$(node -p "require('./package.json').name")"
-          echo "Authenticated npm user: ${NPM_USER}"
-          if npm view "${PACKAGE_NAME}" version --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
-            MAINTAINERS_JSON="$(npm view "${PACKAGE_NAME}" maintainers --json --registry=https://registry.npmjs.org/)"
-            node -e '
-              const maintainers = JSON.parse(process.argv[1]);
-              const npmUser = process.argv[2];
-              const packageName = process.argv[3];
-              const entries = Array.isArray(maintainers) ? maintainers : [maintainers];
-              const usernames = entries
-                .map((entry) => (typeof entry === "string" ? entry.split(" <")[0] : entry?.name))
-                .filter(Boolean);
-              if (!usernames.includes(npmUser)) {
-                console.error(`npm user "${npmUser}" is not a maintainer of ${packageName}.`);
-                console.error(`Maintainers: ${usernames.join(", ") || "(none found)"}`);
-                process.exit(1);
-              }
-            ' "${MAINTAINERS_JSON}" "${NPM_USER}" "${PACKAGE_NAME}"
-          else
-            echo "Package ${PACKAGE_NAME} is not published yet; skipping maintainer check."
-          fi
-      - name: Lint code
-        run: yarn run lint:core
+
+      - name: Lint
+        run: yarn lint
+
       - name: Type check
-        run: yarn run typecheck
-      - name: Run tests
-        run: yarn run test:core
-      - name: Build package
-        run: yarn run build:core
-      - name: Run semantic-release
-        id: semantic
+        run: yarn typecheck
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      - name: Semantic Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN || secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPMTOKEN }}
-        run: npx semantic-release --debug
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+          NPM_TOKEN: ${{ secrets.NPMTOKEN }}
+        run: npx semantic-release
