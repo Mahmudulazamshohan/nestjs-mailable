@@ -1,3 +1,7 @@
+## 1.14.0 (2026-05-03)
+
+* feat: update main ([ca2c9d4](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/ca2c9d4))
+
 ## 1.13.0 (2026-05-03)
 
 * fix: update code ([2ed5019](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/2ed5019))
