@@ -1,3 +1,10 @@
+## 1.13.0 (2026-05-03)
+
+* fix: update code ([2ed5019](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/2ed5019))
+* chore: update release ([132c6dc](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/132c6dc))
+* Merge branch 'main' of https://github.com/Mahmudulazamshohan/nestjs-mailable ([e8b6296](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/e8b6296))
+* feat: update release ([93bbc16](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/93bbc16))
+
 ## 1.12.0 (2026-05-03)
 
 * Merge branch 'main' of https://github.com/Mahmudulazamshohan/nestjs-mailable ([b2ec644](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/b2ec644))
