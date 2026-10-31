@@ -1,3 +1,9 @@
+## 1.15.0 (2026-10-31)
+
+* feat: add queue, failover, named mailers, new providers and fluent API ([9cafc51](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/9cafc51))
+* feat: update PULL ([e24c1c5](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/e24c1c5))
+* Merge branch 'main' of https://github.com/Mahmudulazamshohan/nestjs-mailable ([8a6aa22](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/8a6aa22))
+
 ## 1.14.0 (2026-05-03)
 
 * feat: update main ([ca2c9d4](https://github.com/Mahmudulazamshohan/nestjs-mailable/commit/ca2c9d4))
