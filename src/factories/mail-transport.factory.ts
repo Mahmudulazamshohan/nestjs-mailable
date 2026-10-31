@@ -4,6 +4,11 @@ import { SmtpTransport } from '../transports/smtp.transport';
 import { SesTransport } from '../transports/ses.transport';
 import { MailgunTransport } from '../transports/mailgun.transport';
 import { MailjetTransport } from '../transports/mailjet.transport';
+import { ResendTransport } from '../transports/resend.transport';
+import { PostmarkTransport } from '../transports/postmark.transport';
+import { SendGridTransport } from '../transports/sendgrid.transport';
+import { BrevoTransport } from '../transports/brevo.transport';
+import { FailoverTransport } from '../transports/failover.transport';
 import { TransportType } from '../types/transport.type';
 import { RetryTransport } from '../retry/retry-transport';
 
@@ -54,11 +59,34 @@ export class MailTransportFactory {
           transport: 'mailjet',
           options: config.options,
         });
+      case TransportType.RESEND:
+        return new ResendTransport(this.requireOptions(config, 'Resend'));
+      case TransportType.POSTMARK:
+        return new PostmarkTransport(this.requireOptions(config, 'Postmark'));
+      case TransportType.SENDGRID:
+        return new SendGridTransport(this.requireOptions(config, 'SendGrid'));
+      case TransportType.BREVO:
+        return new BrevoTransport(this.requireOptions(config, 'Brevo'));
+      case TransportType.FAILOVER:
+        if (!config.transports?.length) {
+          throw new Error('Failover transport requires at least one transport');
+        }
+        return new FailoverTransport(
+          config.transports.map((child) => this.createTransport(child)),
+          config.strategy,
+        );
       default: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         throw new Error(`Unsupported transport type: ${(config as any).type || 'unknown'}`);
       }
     }
+  }
+
+  private requireOptions<T>(config: { options?: T }, name: string): T {
+    if (!config.options) {
+      throw new Error(`${name} transport requires options configuration`);
+    }
+    return config.options;
   }
 
   registerCustomTransport(name: string, factory: () => MailTransport): void {
@@ -67,6 +95,16 @@ export class MailTransportFactory {
 
   // Transport Strategy Pattern
   getAvailableTransports(): TransportType[] {
-    return [TransportType.SMTP, TransportType.SES, TransportType.MAILGUN, TransportType.MAILJET];
+    return [
+      TransportType.SMTP,
+      TransportType.SES,
+      TransportType.MAILGUN,
+      TransportType.MAILJET,
+      TransportType.RESEND,
+      TransportType.POSTMARK,
+      TransportType.SENDGRID,
+      TransportType.BREVO,
+      TransportType.FAILOVER,
+    ];
   }
 }

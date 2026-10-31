@@ -5,6 +5,8 @@ import { MailTransportFactory } from './factories/mail-transport.factory';
 import { TemplateEngineFactory } from './services/template.service';
 import { MailConfiguration } from './interfaces/mail.interface';
 import { MAIL_EVENT_EMITTER } from './events/mail-events.interface';
+import { MAIL_QUEUE } from './queue/mail-queue.interface';
+import { createMailQueue } from './queue/mail-queue.factory';
 
 // Module options interface - Now directly takes MailConfiguration
 export interface MailModuleOptions extends MailConfiguration {
@@ -27,11 +29,17 @@ export interface MailModuleOptionsFactory {
 
 // Constants
 export const MAIL_MODULE_OPTIONS = 'MAIL_MODULE_OPTIONS';
-export { MAIL_EVENT_EMITTER };
+export { MAIL_EVENT_EMITTER, MAIL_QUEUE };
 
 const defaultEventEmitterProvider: Provider = {
   provide: MAIL_EVENT_EMITTER,
   useValue: null,
+};
+
+const mailQueueProvider: Provider = {
+  provide: MAIL_QUEUE,
+  useFactory: (configService: MailConfigService) => createMailQueue(configService.getQueueConfig()),
+  inject: [MailConfigService],
 };
 
 @Module({})
@@ -48,12 +56,20 @@ export class MailModule {
       providers: [
         configProvider,
         defaultEventEmitterProvider,
+        mailQueueProvider,
         MailTransportFactory,
         TemplateEngineFactory,
         MailService,
         ...(providers || []),
       ],
-      exports: [MailService, MailConfigService, MailTransportFactory, TemplateEngineFactory, ...(exports || [])],
+      exports: [
+        MailService,
+        MailConfigService,
+        MailTransportFactory,
+        TemplateEngineFactory,
+        MAIL_QUEUE,
+        ...(exports || []),
+      ],
       global: true,
     };
   }
@@ -67,6 +83,7 @@ export class MailModule {
       providers: [
         ...asyncProviders,
         defaultEventEmitterProvider,
+        mailQueueProvider,
         MailTransportFactory,
         TemplateEngineFactory,
         MailService,
@@ -77,6 +94,7 @@ export class MailModule {
         MailConfigService,
         MailTransportFactory,
         TemplateEngineFactory,
+        MAIL_QUEUE,
         ...(options.exports || []),
       ],
       global: true,

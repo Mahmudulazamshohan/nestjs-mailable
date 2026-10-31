@@ -327,7 +327,11 @@ describe('Transport Verification', () => {
       expect(availableTransports).toContain(TransportType.SES);
       expect(availableTransports).toContain(TransportType.MAILGUN);
       expect(availableTransports).toContain(TransportType.MAILJET);
-      expect(availableTransports).toHaveLength(4);
+      expect(availableTransports).toContain(TransportType.RESEND);
+      expect(availableTransports).toContain(TransportType.POSTMARK);
+      expect(availableTransports).toContain(TransportType.SENDGRID);
+      expect(availableTransports).toContain(TransportType.BREVO);
+      expect(availableTransports).toHaveLength(9);
     });
   });
 

@@ -1,5 +1,6 @@
 // Core services and module
-export { MailService } from './services/mail.service';
+export { MailService, MailSender, Mailer } from './services/mail.service';
+export type { SendOptions, QueueMailOptions } from './services/mail.service';
 export { MailModule } from './mail.module';
 
 // Interfaces and types
@@ -31,6 +32,12 @@ export {
 // Batch sending
 export { MailBatchSender } from './batch/mail-batch-sender';
 export type { BatchItem, BatchOptions, BatchResult, BatchResultItem } from './batch/batch.interface';
+
+// Queue
+export * from './queue';
+
+// Failover
+export { FailoverExhaustedError } from './transports/failover.transport';
 
 // Retry
 export { RetryExhaustedError } from './retry/retry-transport';

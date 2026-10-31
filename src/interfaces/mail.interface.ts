@@ -1,3 +1,6 @@
+import type { HtmlToTextOptions } from 'html-to-text';
+import type { InlineCssOptions } from '../utils/html-processing';
+import type { QueueConfiguration } from '../queue/mail-queue.interface';
 import { TransportType } from '../types/transport.type';
 import { TemplateEngineType } from '../constants/template.constants';
 
@@ -23,10 +26,18 @@ export interface EventsConfiguration {
 
 export interface MailConfiguration {
   transport: TransportConfiguration;
+  /** Additional named mailers, selected with `mailService.mailer(name)`. `transport` stays the default mailer. */
+  mailers?: Record<string, TransportConfiguration>;
   from?: Address;
   replyTo?: Address | false;
   templates?: TemplateConfiguration;
   events?: EventsConfiguration;
+  /** Queue driver used by `queue()` and `later()`. Omit to disable queueing. */
+  queue?: QueueConfiguration;
+  /** Generate a plain text part from the HTML when no text is set. Pass options to customise html-to-text. */
+  autoText?: boolean | HtmlToTextOptions;
+  /** Inline `<style>` CSS into element style attributes before sending. Pass options to customise juice. */
+  inlineCss?: boolean | InlineCssOptions;
 }
 
 // Discriminated union enforces transport-specific required fields
@@ -67,11 +78,47 @@ export interface MailjetTransportConfiguration {
   retry?: RetryOptions;
 }
 
+export interface ResendTransportConfiguration {
+  type: typeof TransportType.RESEND;
+  options: ResendOptions;
+  retry?: RetryOptions;
+}
+
+export interface PostmarkTransportConfiguration {
+  type: typeof TransportType.POSTMARK;
+  options: PostmarkOptions;
+  retry?: RetryOptions;
+}
+
+export interface SendGridTransportConfiguration {
+  type: typeof TransportType.SENDGRID;
+  options: SendGridOptions;
+  retry?: RetryOptions;
+}
+
+export interface BrevoTransportConfiguration {
+  type: typeof TransportType.BREVO;
+  options: BrevoOptions;
+  retry?: RetryOptions;
+}
+
+export interface FailoverTransportConfiguration {
+  type: typeof TransportType.FAILOVER;
+  transports: TransportConfiguration[];
+  strategy?: 'ordered' | 'roundrobin';
+  retry?: RetryOptions;
+}
+
 export type TransportConfiguration =
   | SMTPTransportConfiguration
   | SESTransportConfiguration
   | MailgunTransportConfiguration
-  | MailjetTransportConfiguration;
+  | MailjetTransportConfiguration
+  | ResendTransportConfiguration
+  | PostmarkTransportConfiguration
+  | SendGridTransportConfiguration
+  | BrevoTransportConfiguration
+  | FailoverTransportConfiguration;
 
 export interface MailgunOptions {
   domain: string;
@@ -84,6 +131,29 @@ export interface MailgunOptions {
 export interface MailjetOptions {
   apiKey: string;
   apiSecret: string;
+  timeout?: number;
+}
+
+export interface ResendOptions {
+  apiKey: string;
+}
+
+export interface PostmarkOptions {
+  serverToken: string;
+  messageStream?: string;
+  baseUrl?: string;
+  timeout?: number;
+}
+
+export interface SendGridOptions {
+  apiKey: string;
+  baseUrl?: string;
+  timeout?: number;
+}
+
+export interface BrevoOptions {
+  apiKey: string;
+  baseUrl?: string;
   timeout?: number;
 }
 

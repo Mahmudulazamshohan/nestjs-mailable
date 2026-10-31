@@ -29,6 +29,22 @@ export class MailConfigService {
     return this.config.transport;
   }
 
+  getMailersConfig(): Record<string, TransportConfiguration> | undefined {
+    return this.config.mailers;
+  }
+
+  getQueueConfig(): MailConfiguration['queue'] {
+    return this.config.queue;
+  }
+
+  getAutoText(): MailConfiguration['autoText'] {
+    return this.config.autoText;
+  }
+
+  getInlineCss(): MailConfiguration['inlineCss'] {
+    return this.config.inlineCss;
+  }
+
   getGlobalFrom(): Address | undefined {
     return this.config.from;
   }
